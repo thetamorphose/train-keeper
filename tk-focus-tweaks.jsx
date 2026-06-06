@@ -37,7 +37,7 @@ function TKFTweaks() {
       <TweakSlider label="Крупность цифр" value={t.bignum} min={18} max={34} step={1} unit="px"
         onChange={(v) => setTweak('bignum', v)} />
       <TweakSection label="Данные" />
-      <TweakButton label="Сбросить тренировку" onClick={() => { try { localStorage.removeItem('tk_focus_v2'); } catch (e) {} location.reload(); }} />
+      <TweakButton label="Сбросить всё" onClick={() => { try { localStorage.removeItem('tk_focus_v3'); localStorage.removeItem('tk_focus_v3_draft'); } catch (e) {} location.reload(); }} />
     </TweaksPanel>
   );
 }

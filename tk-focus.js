@@ -31,7 +31,8 @@
   const mkEx = (name, fields) => ({ id: nid(), name, done: false, fields: fields || [] });
 
   const DEFAULT = () => ({
-    mode: 'build', i: 0, comment: '', startedAt: 0, elapsed: 0,
+    mode: 'home', history: [], title: 'Кросс-день',
+    i: 0, comment: '', startedAt: 0, elapsed: 0,
     sections: [
       { name: 'Разминка', ex: [
         mkEx('Беговая дорожка', [mkField(tpl('время'), 300)]),
@@ -54,9 +55,21 @@
   try {
     const raw = localStorage.getItem(LSKEY);
     state = raw ? JSON.parse(raw) : DEFAULT();
+    if (!state.history) state.history = [];
+    if (!state.title) state.title = 'Кросс-день';
     state.sections.forEach((s) => s.ex.forEach((e) => { if (e.id >= _id) _id = e.id + 1; e.fields.forEach((f) => { if (f.id >= _id) _id = f.id + 1; }); }));
   } catch (e) { state = DEFAULT(); }
   const save = () => { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch (e) {} };
+
+  async function syncHistory() {
+    try {
+      const res = await fetch('/api/history');
+      if (res.ok) {
+        state.history = await res.json();
+        render();
+      }
+    } catch (e) { console.error('History sync failed:', e); }
+  }
 
   const exBody = $('#exBody');
   const curSec = () => state.sections[state.i];
@@ -132,21 +145,54 @@
     return h;
   }
 
+  /* ---------------- home render ---------------- */
+  function homeHTML() {
+    let h = '<div class="home">';
+    h += '<div class="h-head">История тренировок</div>';
+    if (!state.history || state.history.length === 0) {
+      h += '<div class="h-empty">Тут пока пусто. Время первой тренировки!</div>';
+    } else {
+      h += '<div class="h-list">' + state.history.map((h, idx) => {
+        return '<div class="h-item" data-act="viewhistory" data-i="' + idx + '">' +
+          '<div class="h-top"><span class="h-title">' + esc(h.title || 'Тренировка') + '</span><span class="h-date">' + new Date(h.date).toLocaleDateString() + '</span></div>' +
+          '<div class="h-stats">⏱ ' + mmss(Math.floor(h.elapsed / 1000)) + '</div>' +
+          '</div>';
+      }).join('') + '</div>';
+    }
+    h += '<div class="h-actions"><button class="secbtn go" data-act="newworkout">＋ Новая тренировка</button></div>';
+    h += '</div>';
+    return h;
+  }
+
   /* ---------------- main render ---------------- */
   function render() {
     const mode = state.mode;
     const snav = $('#snav'), dots = $('#dots'), wtitle = $('#wtitle'), wpill = $('#wpill'), crumb = $('#crumb');
 
+    if (mode === 'home') {
+      snav.style.display = 'none'; dots.style.display = 'none';
+      crumb.textContent = 'Главная';
+      wtitle.textContent = 'Train Keeper'; wtitle.contentEditable = 'false';
+      wpill.className = 'timer draft mono'; wpill.textContent = 'архив';
+      exBody.innerHTML = homeHTML();
+      $('#secbtn').style.display = 'none';
+      save(); return;
+    }
+    $('#secbtn').style.display = '';
+
     if (mode === 'summary') {
       snav.style.display = 'none'; dots.style.display = 'none';
-      crumb.textContent = 'Итог';
+      crumb.textContent = state.isViewingHistory ? 'История' : 'Итог';
+      wtitle.textContent = state.title;
       wtitle.contentEditable = 'false'; wpill.className = 'timer mono'; wpill.textContent = '✓ готово';
       exBody.innerHTML = summaryHTML();
-      const btn = $('#secbtn'); btn.className = 'secbtn go'; btn.dataset.act = 'closesummary'; btn.textContent = 'Готово · к редактированию';
+      const btn = $('#secbtn'); btn.className = 'secbtn go'; btn.dataset.act = 'closesummary';
+      btn.textContent = state.isViewingHistory ? '← Назад к истории' : 'Готово · к редактированию';
       save(); return;
     }
 
     snav.style.display = ''; dots.style.display = '';
+    wtitle.textContent = state.title;
     const sec = curSec();
     $('#sname').textContent = sec.name;
     const total = sec.ex.length, done = sec.ex.filter((e) => e.done).length;
@@ -187,7 +233,36 @@
   }
   function finishWorkout() { state.mode = 'summary'; state.elapsed = Date.now() - state.startedAt; stopTimer(); render(); exBody.scrollTop = 0; }
   function closeSummary() {
-    state.mode = 'build'; state.i = 0;
+    if (state.isViewingHistory) {
+      state.isViewingHistory = false;
+      const draft = JSON.parse(localStorage.getItem(LSKEY + '_draft'));
+      if (draft) {
+        const history = state.history;
+        Object.assign(state, draft);
+        state.history = history;
+      }
+      state.mode = 'home';
+      render(); exBody.scrollTop = 0;
+      return;
+    }
+    const finished = {
+      title: state.title || $('#wtitle').textContent || 'Тренировка',
+      date: Date.now(),
+      elapsed: state.elapsed,
+      comment: state.comment,
+      sections: JSON.parse(JSON.stringify(state.sections))
+    };
+
+    // Save to server
+    fetch('/api/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(finished)
+    }).then(syncHistory);
+
+    state.mode = 'home';
+    state.i = 0;
+    state.comment = '';
     state.sections.forEach((s) => s.ex.forEach((e) => { e.done = false; e.fields.forEach((f) => { if (f.plan !== undefined) f.value = f.plan; }); }));
     render(); exBody.scrollTop = 0;
   }
@@ -200,6 +275,14 @@
     const ex = id ? findEx(id) : null;
     switch (act) {
       case 'val': case 'text': case 'label': case 'cname': case 'secname': case 'comment': return;
+      case 'newworkout': state.mode = 'build'; render(); return;
+      case 'viewhistory': {
+        const h = state.history[i];
+        localStorage.setItem(LSKEY + '_draft', JSON.stringify(state));
+        state.isViewingHistory = true; state.mode = 'summary';
+        state.title = h.title; state.elapsed = h.elapsed; state.comment = h.comment; state.sections = h.sections;
+        render(); return;
+      }
       case 'toggle': if (state.mode === 'active' && ex) { ex.done = !ex.done; render(); } return;
       case 'inc': case 'dec': { const f = findField(ex, fid); const d = act === 'inc' ? f.step : -f.step; f.value = Math.max(0, Math.round((Number(f.value) + d) * 100) / 100); render(); return; }
       case 'rmfield': ex.fields = ex.fields.filter((f) => f.id != fid); render(); return;
@@ -262,6 +345,7 @@
 
   let tt; function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 1700); }
 
+  syncHistory();
   render();
   if (state.mode === 'active') startTimer();
 })();
