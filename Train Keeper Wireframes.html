@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Train Keeper — Вайрфреймы: активная тренировка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tk-styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="intro">
+    <div class="brand"><span class="dot"></span> Train Keeper · low-fi wireframes</div>
+    <h1>Экран активной тренировки</h1>
+    <p>Четыре подхода к одному экрану. Поля упражнений задаёт сам пользователь — фиксированных шаблонов нет (силовая, йога, вело). Сравниваем по двум осям.</p>
+    <div class="legend">
+      <span class="axis"><span class="swatch" style="background:var(--accent)"></span> Ось 1 — <b>способ ввода подходов</b></span>
+      <span class="axis"><span class="swatch" style="background:var(--coral)"></span> Ось 2 — <b>компоновка: список ↔ фокус</b></span>
+    </div>
+  </header>
+
+  <p class="scrollhint">↔ листай вправо — 4 варианта · тапай степперы, ✓, поля — они живые</p>
+
+  <div class="row" id="row">
+
+    <!-- ============ VARIANT A ============ -->
+    <section class="col" data-screen-label="A — Открытый список">
+      <div class="vtag">
+        <div class="badge">A</div>
+        <h3>Открытый список</h3>
+        <p class="idea">Вся тренировка перед глазами. Подходы правишь степперами +/− прямо в строке.</p>
+        <div class="chips"><span class="chip">список</span><span class="chip hot">степперы</span><span class="chip">плотно</span></div>
+      </div>
+
+      <div class="phone"><div class="screen">
+        <div class="notch"><span>10:09</span><span class="pill"></span><span class="mono">85</span></div>
+        <div class="wtop">
+          <div class="crumb">Тренировка · 24:18</div>
+          <div class="trow">
+            <span class="wtitle" contenteditable="true" spellcheck="false">Ноги · силовая</span>
+            <span class="timer mono">⏱ 24:18</span>
+          </div>
+        </div>
+        <div class="body">
+
+          <div class="exc" data-fields="кг,повт">
+            <div class="exc-h"><span class="grip">⠿</span><span class="ename" contenteditable="true" spellcheck="false">Приседания</span><span class="menu">⋯</span></div>
+            <div class="fields"><span class="ftag">Вес · кг</span><span class="ftag">Повторы</span><span class="ftag add" data-add-field>＋ поле</span></div>
+            <div class="sets">
+              <div class="set done"><span class="snum" data-done>✓</span><span class="stepper" data-step="2.5"><button data-dec>−</button><span class="val mono">60</span><button data-inc>+</button><span class="unit">кг</span></span><span class="stepper" data-step="1"><button data-dec>−</button><span class="val mono">10</span><button data-inc>+</button><span class="unit">повт</span></span></div>
+              <div class="set done"><span class="snum" data-done>✓</span><span class="stepper" data-step="2.5"><button data-dec>−</button><span class="val mono">60</span><button data-inc>+</button><span class="unit">кг</span></span><span class="stepper" data-step="1"><button data-dec>−</button><span class="val mono">10</span><button data-inc>+</button><span class="unit">повт</span></span></div>
+              <div class="set"><span class="snum" data-done>3</span><span class="stepper" data-step="2.5"><button data-dec>−</button><span class="val mono">62</span><button data-inc>+</button><span class="unit">кг</span></span><span class="stepper" data-step="1"><button data-dec>−</button><span class="val mono">8</span><button data-inc>+</button><span class="unit">повт</span></span></div>
+            </div>
+            <div class="ghost" data-add-set>＋ подход</div>
+          </div>
+
+          <div class="exc" data-fields="сек">
+            <div class="exc-h"><span class="grip">⠿</span><span class="ename" contenteditable="true" spellcheck="false">Планка</span><span class="menu">⋯</span></div>
+            <div class="fields"><span class="ftag">Время · сек</span><span class="ftag add" data-add-field>＋ поле</span></div>
+            <div class="sets">
+              <div class="set"><span class="snum" data-done>1</span><span class="stepper" data-step="5"><button data-dec>−</button><span class="val mono">45</span><button data-inc>+</button><span class="unit">сек</span></span></div>
+              <div class="set"><span class="snum" data-done>2</span><span class="stepper" data-step="5"><button data-dec>−</button><span class="val mono">45</span><button data-inc>+</button><span class="unit">сек</span></span></div>
+            </div>
+            <div class="ghost" data-add-set>＋ подход</div>
+          </div>
+
+          <div class="addexc" data-add-exc>＋ упражнение</div>
+        </div>
+        <div class="finish"><button class="fbtn">Завершить тренировку</button></div>
+      </div></div>
+
+      <div class="note"><span class="arrow">↑</span>Тап <b>＋/−</b> меняет вес и повторы на лету. Кружок слева — отметка «сделано». <b>＋ поле</b> — добавить свою колонку под любой тип.</div>
+    </section>
+
+    <!-- ============ VARIANT B ============ -->
+    <section class="col" data-screen-label="B — Фокус на упражнении">
+      <div class="vtag">
+        <div class="badge">B</div>
+        <h3>Фокус-режим</h3>
+        <p class="idea">Одно упражнение на весь экран. Крупные значения, свайп между упражнениями.</p>
+        <div class="chips"><span class="chip hot">фокус</span><span class="chip">крупно</span><span class="chip">свайп</span></div>
+      </div>
+
+      <div class="phone"><div class="screen">
+        <div class="notch"><span>10:09</span><span class="pill"></span><span class="mono">85</span></div>
+        <div class="wtop">
+          <div class="crumb">Ноги · силовая · 24:18</div>
+          <div class="focus-top" id="bTop">
+            <button class="nav-arrow" data-bprev>‹</button>
+            <div class="dots" id="bDots"></div>
+            <button class="nav-arrow" data-bnext>›</button>
+          </div>
+        </div>
+        <div class="body" style="padding-top:18px;justify-content:flex-start;">
+          <div id="bStage">
+            <div class="bigname" id="bName" contenteditable="true" spellcheck="false">Приседания</div>
+            <div class="bigsub" id="bSub">Подход 3 из 4</div>
+
+            <div class="dial">
+              <div class="dlabel" id="bL1">ВЕС · КГ</div>
+              <div class="drow"><button class="bigstep" data-bdec="0">−</button><span class="dval mono" id="bV0">62</span><button class="bigstep" data-binc="0">+</button></div>
+            </div>
+            <div class="dial">
+              <div class="dlabel" id="bL2">ПОВТОРЫ</div>
+              <div class="drow"><button class="bigstep" data-bdec="1">−</button><span class="dval mono" id="bV1">8</span><button class="bigstep" data-binc="1">+</button></div>
+            </div>
+
+            <div class="ticks" id="bTicks"></div>
+            <button class="donebtn" data-bdone>✓ Готов подход</button>
+          </div>
+        </div>
+      </div></div>
+
+      <div class="note"><span class="arrow">↑</span>Минимум на экране — <b>одно</b> упражнение. Большие <b>＋/−</b> под палец, «Готов подход» двигает дальше, стрелки ‹ › листают упражнения.</div>
+    </section>
+
+    <!-- ============ VARIANT C ============ -->
+    <section class="col" data-screen-label="C — Быстрые теги + нампад">
+      <div class="vtag">
+        <div class="badge">C</div>
+        <h3>Быстрые теги</h3>
+        <p class="idea">Список, но ввод без печати: пресеты-чипы и числовая клавиатура снизу. Подсказывает привычное.</p>
+        <div class="chips"><span class="chip">список</span><span class="chip hot">пресеты</span><span class="chip hot">нампад</span></div>
+      </div>
+
+      <div class="phone"><div class="screen" id="cScreen">
+        <div class="notch"><span>10:09</span><span class="pill"></span><span class="mono">85</span></div>
+        <div class="wtop">
+          <div class="crumb">Тренировка · 24:18</div>
+          <div class="trow"><span class="wtitle" contenteditable="true" spellcheck="false">Грудь · силовая</span><span class="timer mono">⏱ 24:18</span></div>
+        </div>
+        <div class="body" id="cBody">
+          <div class="exc" data-fields="кг,повт">
+            <div class="exc-h"><span class="grip">⠿</span><span class="ename" contenteditable="true" spellcheck="false">Жим лёжа</span><span class="menu">⋯</span></div>
+            <div class="fields"><span class="ftag">Вес · кг</span><span class="ftag">Повторы</span><span class="ftag add" data-add-field>＋ поле</span></div>
+            <div class="cset done"><span class="snum" data-cdone>✓</span><span class="clabel">кг</span><span class="cval" data-cfield="кг">50</span><span class="clabel">×</span><span class="cval" data-cfield="повт">12</span><span class="cdone" data-cdone>✓</span></div>
+            <div class="cset done"><span class="snum" data-cdone>✓</span><span class="clabel">кг</span><span class="cval" data-cfield="кг">50</span><span class="clabel">×</span><span class="cval" data-cfield="повт">10</span><span class="cdone" data-cdone>✓</span></div>
+            <div class="cset cur"><span class="snum" data-cdone>3</span><span class="clabel">кг</span><span class="cval" data-cfield="кг">52</span><span class="clabel">×</span><span class="cval empty" data-cfield="повт">—</span><span class="cdone" data-cdone>✓</span></div>
+            <div class="ghost" data-add-set>＋ подход</div>
+          </div>
+        </div>
+
+        <!-- speed-entry tray -->
+        <div class="tray" id="cTray">
+          <div class="thead"><span class="tt" id="cTrayLabel">Повторы</span><span class="suggest" id="cSug">обычно 10–12</span></div>
+          <div class="preset" id="cPreset"></div>
+          <div class="pad" id="cPad"></div>
+        </div>
+      </div></div>
+
+      <div class="note"><span class="arrow">↑</span>Тап по значению → снизу выезжают <b>пресеты</b> (последнее, привычное) и нампад. Ноль печати — «невидимый ассистент» уже подставил вес.</div>
+    </section>
+
+    <!-- ============ VARIANT D ============ -->
+    <section class="col" data-screen-label="D — Свободная таблица">
+      <div class="vtag">
+        <div class="badge">D</div>
+        <h3>Свободная таблица</h3>
+        <p class="idea">Колонки задаёт пользователь. У каждого упражнения — свои поля: вес/повт, дистанция/время, поза/мин.</p>
+        <div class="chips"><span class="chip">таблица</span><span class="chip hot">свои поля</span><span class="chip">любой тип</span></div>
+      </div>
+
+      <div class="phone"><div class="screen">
+        <div class="notch"><span>10:09</span><span class="pill"></span><span class="mono">85</span></div>
+        <div class="wtop">
+          <div class="crumb">Микс · 24:18</div>
+          <div class="trow"><span class="wtitle" contenteditable="true" spellcheck="false">Кросс-день</span><span class="timer mono">⏱ 24:18</span></div>
+        </div>
+        <div class="body">
+
+          <div class="exc">
+            <div class="exc-h"><span class="grip">⠿</span><span class="ename" contenteditable="true" spellcheck="false">Становая</span><span class="menu">⋯</span></div>
+            <table class="dtable"><thead><tr>
+              <th></th>
+              <th><span class="lab" contenteditable="true" spellcheck="false">Вес</span></th>
+              <th><span class="lab" contenteditable="true" spellcheck="false">Повт</span></th>
+              <th class="addcol" data-add-col>＋</th>
+            </tr></thead><tbody>
+              <tr class="done"><td class="snumcell" data-dnum>1</td><td class="cell"><div class="cin" contenteditable="true">80</div></td><td class="cell"><div class="cin" contenteditable="true">5</div></td><td></td></tr>
+              <tr><td class="snumcell" data-dnum>2</td><td class="cell"><div class="cin" contenteditable="true">80</div></td><td class="cell"><div class="cin" contenteditable="true">5</div></td><td></td></tr>
+            </tbody></table>
+            <div class="ghost" data-add-row>＋ строка</div>
+          </div>
+
+          <div class="exc">
+            <div class="exc-h"><span class="grip">⠿</span><span class="ename" contenteditable="true" spellcheck="false">Вело</span><span class="menu">⋯</span></div>
+            <table class="dtable"><thead><tr>
+              <th></th>
+              <th><span class="lab" contenteditable="true" spellcheck="false">Дист·км</span></th>
+              <th><span class="lab" contenteditable="true" spellcheck="false">Время</span></th>
+              <th><span class="lab" contenteditable="true" spellcheck="false">Пульс</span></th>
+              <th class="addcol" data-add-col>＋</th>
+            </tr></thead><tbody>
+              <tr class="done"><td class="snumcell" data-dnum>1</td><td class="cell"><div class="cin" contenteditable="true">12</div></td><td class="cell"><div class="cin" contenteditable="true">28:40</div></td><td class="cell"><div class="cin" contenteditable="true">142</div></td><td></td></tr>
+            </tbody></table>
+            <div class="dnote">тап по номеру строки — отметить «сделано»</div>
+            <div class="ghost" data-add-row>＋ строка</div>
+          </div>
+
+          <div class="addexc" data-add-exc>＋ упражнение</div>
+        </div>
+        <div class="finish"><button class="fbtn">Завершить</button></div>
+      </div></div>
+
+      <div class="note"><span class="arrow">↑</span>Каждая ячейка и <b>заголовок колонки</b> редактируются. <b>＋</b> добавляет свою колонку — так один экран подходит и под силовую, и под вело, и под йогу.</div>
+    </section>
+
+  </div>
+</div>
+
+<div id="panel-root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="tk-app.js"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tk-tweaks.jsx"></script>
+</body>
+</html>

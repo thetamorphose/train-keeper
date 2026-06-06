@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Train Keeper — Фокус-режим</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tk-focus.css">
+</head>
+<body>
+<div class="stage">
+
+  <header class="head">
+    <div class="brand"><span class="dot"></span> Train Keeper · фокус-режим</div>
+    <h1>Активная тренировка</h1>
+    <p>Создай → проведи → посмотри итог. Режим переключается кнопкой внизу.</p>
+  </header>
+
+  <div class="phone"><div class="screen" id="screen">
+    <div class="notch"><span>10:09</span><span class="pill"></span><span class="mono">85</span></div>
+
+    <div class="wtop">
+      <div class="crumb" id="crumb">Создание тренировки</div>
+      <div class="trow">
+        <span class="wtitle" id="wtitle" contenteditable="true" spellcheck="false">Кросс-день</span>
+        <span class="timer draft mono" id="wpill">черновик</span>
+      </div>
+    </div>
+
+    <div class="snav" id="snav">
+      <button class="nav-arrow" data-prev>‹</button>
+      <div class="smid">
+        <div class="sname" id="sname" contenteditable="true" spellcheck="false" data-act="secname">Секция</div>
+        <div class="ssub" id="ssub">—</div>
+      </div>
+      <button class="nav-arrow" data-next>›</button>
+    </div>
+    <div class="dots" id="dots"></div>
+
+    <div class="body" id="exBody">
+      <!-- rendered by JS -->
+    </div>
+
+    <div class="secfoot"><button class="secbtn ghost" id="secbtn" data-act="nextsec">—</button></div>
+
+    <!-- add-field sheet -->
+    <div class="scrim" id="scrim"></div>
+    <div class="fsheet" id="sheet">
+      <div class="sgrab"></div>
+      <h4>Добавить поле</h4>
+      <div class="tchips" id="tchips"></div>
+      <div class="sdiv">или своё</div>
+      <div class="custom">
+        <input type="text" id="cName" placeholder="Название поля (напр. «Уровень»)" maxlength="22">
+        <div class="seg" id="cType">
+          <button data-t="num" class="on">Число</button>
+          <button data-t="time">Время</button>
+          <button data-t="text">Текст</button>
+        </div>
+        <div class="cunit-wrap" id="cUnitWrap">
+          <input type="text" id="cUnit" placeholder="Единица (кг, км, раз…)" maxlength="6">
+          <button class="cadd" id="cAdd">Добавить</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div></div>
+
+  <p class="foot"><b>Создание:</b> секции, упражнения и ожидаемые значения (меню ⋯ — дублировать/изменить). <b>«Начать»</b> → активная тренировка: тап по карточке отмечает выполнение, значения правятся. На финише — таблица Результатов с подсветкой отклонений от плана и комментарий.</p>
+</div>
+
+<div id="panel-root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="tk-focus.js"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="tk-focus-tweaks.jsx"></script>
+</body>
+</html>
