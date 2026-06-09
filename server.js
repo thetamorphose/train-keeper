@@ -8,7 +8,12 @@ import os from 'os';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = 3000;
-const DB_FILE = 'history.json';
+
+// Environment-based database selection
+const env = process.env.NODE_ENV || 'production';
+const DB_FILE = env === 'test' 
+  ? 'history.test.json' 
+  : (env === 'development' ? 'history.dev.json' : 'history.json');
 
 /**
  * Initialize lowdb for history persistence

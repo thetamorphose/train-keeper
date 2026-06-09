@@ -4,7 +4,9 @@
   "description": "123",
   "main": "tk-app.js",
   "scripts": {
-    "test": "jest"
+    "start": "node server.js",
+    "dev": "cross-env NODE_ENV=development node server.js",
+    "test": "cross-env NODE_ENV=test jest"
   },
   "repository": {
     "type": "git",
@@ -24,6 +26,7 @@
     "lowdb": "^7.0.1"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "jest": "^30.4.2"
   }
 }
