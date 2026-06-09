@@ -1,8 +1,27 @@
-/* ===== Train Keeper wireframes — interactions (vanilla) ===== */
+/**
+ * Train Keeper Wireframes - Core Interaction Logic
+ * This module handles shared interactions for the initial lo-fi wireframes (Variants A, B, C, D).
+ */
 (function () {
   'use strict';
+  /**
+   * Selector helper
+   * @param {string} s - Selector
+   * @param {HTMLElement} [r] - Root element 
+   */
   const $ = (s, r) => (r || document).querySelector(s);
+  
+  /**
+   * Multiple selector helper
+   * @param {string} s - Selector
+   * @param {HTMLElement} [r] - Root element 
+   */
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  
+  /**
+   * Formatting helper for numbers
+   * @param {number} n 
+   */
   const fmt = (n) => (Math.round(n * 100) / 100).toString();
 
   /* ---------- shared steppers (A & others using .stepper) ---------- */

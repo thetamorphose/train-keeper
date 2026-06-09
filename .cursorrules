@@ -1,0 +1,19 @@
+# Train Keeper AI Rules
+
+## Design Language: Fluid Utility
+- Glassmorphism, 16-24px border-radius.
+- Colors: Teal/Cyan primary, Coral/Gold accents.
+
+## Business Logic
+- NO SETS. Hierarchy is Workout -> Section -> Exercise.
+- Dynamic fields: Weight, Reps, Distance, Time, Pose, Custom.
+
+## Continuous Documentation
+- The AI MUST proactively maintain documentation (`docs/ai/`).
+- If you change the DB schema, add an API route, or add a dependency, you MUST inform the user and update `DATA_MODEL.md`, `ROADMAP.md`, `CHANGELOG.md`, or `DEPENDENCIES.md` accordingly.
+
+## Testing
+- TDD with Jest is mandatory. Always write tests first.
+
+## Tech Stack
+- Node.js, Express, LowDB, Vanilla JS/JSX, CSS.

@@ -12,7 +12,10 @@
     return Math.max(0, parseInt(str) || 0);
   };
 
-  /* ---- field templates ---- */
+  /**
+   * Field templates for standard workout metrics
+   * @type {Array<{key: string, label: string, unit: string, type: string, step?: number, def: (number|string)}>}
+   */
   const TEMPLATES = [
     { key: 'вес',         label: 'Вес',         unit: 'кг', type: 'num',  step: 2.5, def: 60 },
     { key: 'повторения',  label: 'Повторения',  unit: 'раз', type: 'num', step: 1,   def: 10 },
@@ -20,16 +23,37 @@
     { key: 'время',       label: 'Время',       unit: '',   type: 'time', step: 5,   def: 60 },
     { key: 'поза',        label: 'Поза',        unit: '',   type: 'text', def: '' },
   ];
+
+  /**
+   * Get template by key
+   * @param {string} k 
+   */
   const tpl = (k) => TEMPLATES.find((t) => t.key === k);
+
   let _id = 1;
   const nid = () => _id++;
+
+  /**
+   * Create a new field object based on a template
+   * @param {Object} t - Template object 
+   * @param {*} value - Initial value
+   */
   const mkField = (t, value) => ({
     id: nid(), key: t.key, label: t.label, unit: t.unit || '', type: t.type, step: t.step || 1,
     value: value !== undefined ? value : (t.type === 'text' ? '' : t.def || 0), plan: undefined,
     ph: t.key === 'поза' ? 'Поза…' : '—',
   });
+
+  /**
+   * Create a new exercise object
+   * @param {string} name 
+   * @param {Array} fields 
+   */
   const mkEx = (name, fields) => ({ id: nid(), name, done: false, fields: fields || [] });
 
+  /**
+   * Returns default application state
+   */
   const DEFAULT = () => ({
     mode: 'home', history: [], title: 'Кросс-день',
     i: 0, comment: '', startedAt: 0, elapsed: 0,
@@ -165,6 +189,9 @@
   }
 
   /* ---------------- main render ---------------- */
+  /**
+   * Main rendering function. Updates the DOM based on the current application state.
+   */
   function render() {
     const mode = state.mode;
     const snav = $('#snav'), dots = $('#dots'), wtitle = $('#wtitle'), wpill = $('#wpill'), crumb = $('#crumb');
@@ -226,12 +253,23 @@
   function stopTimer() { if (timerInt) clearInterval(timerInt); timerInt = null; }
 
   /* ---------------- mode transitions ---------------- */
+  /**
+   * Transition from 'build' to 'active' mode
+   */
   function startWorkout() {
     state.mode = 'active'; state.i = 0; state.startedAt = Date.now(); state.comment = '';
     state.sections.forEach((s) => s.ex.forEach((e) => { e.done = false; e.fields.forEach((f) => { f.plan = f.value; }); }));
     editId = null; menuId = null; render(); startTimer(); exBody.scrollTop = 0;
   }
+  
+  /**
+   * Transition from 'active' to 'summary' mode
+   */
   function finishWorkout() { state.mode = 'summary'; state.elapsed = Date.now() - state.startedAt; stopTimer(); render(); exBody.scrollTop = 0; }
+  
+  /**
+   * Handle summary closure: either save to history or return from history view
+   */
   function closeSummary() {
     if (state.isViewingHistory) {
       state.isViewingHistory = false;
