@@ -9,3 +9,4 @@ All notable changes to this project will be documented in this file.
 - Interactive Lo-Fi prototypes for Focus Mode (from previous session).
 - Project Roadmap and User Flows documentation.
 - ADR system for recording technical decisions.
+- Initial Jest test suite with sanity test to fix CI pipeline.

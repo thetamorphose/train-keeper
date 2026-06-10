@@ -9,6 +9,8 @@ Focus on the core "Focus Mode" workout experience with section-based navigation 
 - [x] Initial Project Setup (Node.js, Express, LowDB)
 - [x] AI Documentation Framework (Rules, Architecture, Roadmap)
 - [x] Jest Testing Environment Setup
+- [ ] Implement Comprehensive Tests for core User Flows (TDD)
+- [ ] Refactor codebase and tests using Context-7 documentation and Agent Skills
 - [ ] Expand and complete the Domain Glossary in GEMINI.md
 - [ ] Basic API for Workout Management (CRUD)
 
