@@ -11,6 +11,8 @@ Focus on the core "Focus Mode" workout experience with section-based navigation 
 - [x] Jest Testing Environment Setup
 - [x] Implement Comprehensive Tests for core User Flows (TDD)
 - [ ] Refactor codebase and tests using Context-7 documentation and Agent Skills
+- [ ] Create a "Meta-Skill" (Skill of Skills) for intelligent multi-skill orchestration
+- [ ] Install and configure a TDD Development skill to automate the Red-Green-Refactor cycle
 - [ ] Expand and complete the Domain Glossary in GEMINI.md
 - [ ] Basic API for Workout Management (CRUD)
 
@@ -23,7 +25,8 @@ Focus on the core "Focus Mode" workout experience with section-based navigation 
 - [x] Section Management (Add/Delete sections within a workout)
 
 ### Workout Organization
-- [ ] Workout Lists/Groups (Create, delete, and organize workouts into folders/lists)
+- [x] Workout Lists/Groups (Create, delete, and organize workouts into folders/lists)
+- [x] Server-backed Templates (CRUD API and real-time frontend sync)
 
 ### UI/UX (Fluid Utility)
 - [x] Lo-Fi Interactive Wireframes

@@ -3,13 +3,15 @@
 ## Overview
 This document serves as the Single Source of Truth for all data structures within the LowDB `history.json` and internal state.
 
-## 1. Workout List Object (New)
-A folder or group to organize multiple workouts.
+## 1. Template Object
+A reusable blueprint for a workout (Workout List). Stored in the `templates` collection.
 
 | Field | Type | Description |
 | :--- | :--- | :--- |
 | `id` | `string (uuid)` | Unique identifier. |
-| `name` | `string` | Name of the list (e.g., "Strength Programs", "Yoga"). |
+| `title` | `string` | Name of the template (e.g., "Leg Day"). |
+| `sections` | `Array<Section>` | Blueprint of sections and exercises. |
+| `createdAt` | `number (timestamp)` | Creation time. |
 
 ## 2. Workout Object
 The root entity representing a single training session.

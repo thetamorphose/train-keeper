@@ -55,7 +55,7 @@
    * Returns default application state
    */
   const DEFAULT = () => ({
-    mode: 'home', history: [], title: 'Кросс-день',
+    mode: 'home', history: [], templates: [], activeTemplateId: null, title: 'Кросс-день',
     i: 0, comment: '', startedAt: 0, elapsed: 0,
     sections: [
       { name: 'Разминка', ex: [
@@ -74,25 +74,28 @@
     ],
   });
 
-  const LSKEY = 'tk_focus_v3';
+  const LSKEY = 'tk_focus_v4';
   let state, editId = null, menuId = null, sheetExId = null, timerInt = null;
   try {
     const raw = localStorage.getItem(LSKEY);
     state = raw ? JSON.parse(raw) : DEFAULT();
     if (!state.history) state.history = [];
+    if (!state.templates) state.templates = [];
     if (!state.title) state.title = 'Кросс-день';
     state.sections.forEach((s) => s.ex.forEach((e) => { if (e.id >= _id) _id = e.id + 1; e.fields.forEach((f) => { if (f.id >= _id) _id = f.id + 1; }); }));
   } catch (e) { state = DEFAULT(); }
   const save = () => { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch (e) {} };
 
-  async function syncHistory() {
+  async function syncAll() {
     try {
-      const res = await fetch('/api/history');
-      if (res.ok) {
-        state.history = await res.json();
-        render();
-      }
-    } catch (e) { console.error('History sync failed:', e); }
+      const [hRes, tRes] = await Promise.all([
+        fetch('/api/history'),
+        fetch('/api/templates')
+      ]);
+      if (hRes.ok) state.history = await hRes.json();
+      if (tRes.ok) state.templates = await tRes.json();
+      render();
+    } catch (e) { console.error('Sync failed:', e); }
   }
 
   const exBody = $('#exBody');
@@ -124,9 +127,50 @@
         }
       }
       return res;
+    },
+    async fetchTemplates(state) {
+      try {
+        const res = await fetch('/api/templates');
+        if (res.ok) {
+          state.templates = await res.json();
+        }
+      } catch (e) { console.error('Fetch templates failed:', e); }
+    },
+    async createNewTemplate(state) {
+      try {
+        const res = await fetch('/api/templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: 'Новый список', sections: [] })
+        });
+        if (res.ok) {
+          const t = await res.json();
+          state.templates.unshift(t);
+          state.activeTemplateId = t.id;
+          state.title = t.title;
+          state.sections = t.sections.length ? t.sections : [
+            { name: 'Новая секция', ex: [mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)])] }
+          ];
+          state.mode = 'build';
+          state.i = 0;
+        }
+      } catch (e) { console.error('Create template failed:', e); }
+    },
+    async saveTemplate(state) {
+      if (!state.activeTemplateId) return;
+      try {
+        await fetch('/api/templates/' + state.activeTemplateId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: state.title, sections: state.sections })
+        });
+      } catch (e) { console.error('Save template failed:', e); }
     }
   };
-  if (typeof window !== 'undefined') window.__tkLogic = tkLogic;
+  if (typeof window !== 'undefined') {
+    window.__tkLogic = tkLogic;
+    window.__tkState = state;
+  }
 
   const dispVal = (f, v) => (f.type === 'time' ? mmss(v) : fmt(v)) + (f.type !== 'time' && f.unit ? ' ' + f.unit : '');
   const isDiff = (f) => { if (f.plan === undefined) return false; if (f.type === 'text') return String(f.value || '') !== String(f.plan || ''); return Number(f.value) !== Number(f.plan); };
@@ -201,9 +245,23 @@
   /* ---------------- home render ---------------- */
   function homeHTML() {
     let h = '<div class="home">';
-    h += '<div class="h-head">История тренировок</div>';
+    
+    h += '<div class="h-head">Мои списки тренировок</div>';
+    if (!state.templates || state.templates.length === 0) {
+      h += '<div class="h-empty">У вас пока нет списков. Создайте первый!</div>';
+    } else {
+      h += '<div class="h-list templates">' + state.templates.map((t) => {
+        return '<div class="h-item template" data-act="viewtemplate" data-tid="' + t.id + '">' +
+          '<div class="h-top"><span class="h-title">' + esc(t.title || 'Без названия') + '</span><span class="h-arrow">›</span></div>' +
+          '<div class="h-stats">' + (t.sections ? t.sections.length : 0) + ' секций</div>' +
+          '</div>';
+      }).join('') + '</div>';
+    }
+    h += '<div class="h-actions"><button class="secbtn go" data-act="createtemplate">＋ Новый список</button></div>';
+
+    h += '<div class="h-head" style="margin-top: 32px">История</div>';
     if (!state.history || state.history.length === 0) {
-      h += '<div class="h-empty">Тут пока пусто. Время первой тренировки!</div>';
+      h += '<div class="h-empty">История пока пуста.</div>';
     } else {
       h += '<div class="h-list">' + state.history.map((h, idx) => {
         return '<div class="h-item" data-act="viewhistory" data-i="' + idx + '">' +
@@ -212,7 +270,6 @@
           '</div>';
       }).join('') + '</div>';
     }
-    h += '<div class="h-actions"><button class="secbtn go" data-act="newworkout">＋ Новая тренировка</button></div>';
     h += '</div>';
     return h;
   }
@@ -305,8 +362,10 @@
       const draft = JSON.parse(localStorage.getItem(LSKEY + '_draft'));
       if (draft) {
         const history = state.history;
+        const templates = state.templates;
         Object.assign(state, draft);
         state.history = history;
+        state.templates = templates;
       }
       state.mode = 'home';
       render(); exBody.scrollTop = 0;
@@ -325,7 +384,7 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(finished)
-    }).then(syncHistory);
+    }).then(syncAll);
 
     state.mode = 'home';
     state.i = 0;
@@ -338,11 +397,26 @@
   document.addEventListener('click', (e) => {
     if (menuId !== null && !e.target.closest('.kmenu') && !(e.target.closest('[data-act]') && e.target.closest('[data-act]').dataset.act === 'menu')) { menuId = null; render(); return; }
     const el = e.target.closest('[data-act]'); if (!el) return;
-    const act = el.dataset.act, id = el.dataset.id, fid = el.dataset.fid, i = el.dataset.i;
+    const act = el.dataset.act, id = el.dataset.id, fid = el.dataset.fid, i = el.dataset.i, tid = el.dataset.tid;
     const ex = id ? findEx(id) : null;
     switch (act) {
       case 'val': case 'text': case 'label': case 'cname': case 'secname': case 'comment': return;
       case 'newworkout': state.mode = 'build'; render(); return;
+      case 'createtemplate': tkLogic.createNewTemplate(state).then(render); return;
+      case 'viewtemplate': {
+        const t = state.templates.find(x => x.id === tid);
+        if (t) {
+          state.activeTemplateId = t.id;
+          state.title = t.title;
+          state.sections = t.sections.length ? JSON.parse(JSON.stringify(t.sections)) : [
+            { name: 'Новая секция', ex: [mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)])] }
+          ];
+          state.mode = 'build';
+          state.i = 0;
+          render();
+        }
+        return;
+      }
       case 'viewhistory': {
         const h = state.history[i];
         localStorage.setItem(LSKEY + '_draft', JSON.stringify(state));
@@ -351,11 +425,11 @@
         render(); return;
       }
       case 'toggle': if (state.mode === 'active' && ex) { ex.done = !ex.done; render(); } return;
-      case 'inc': case 'dec': { const f = findField(ex, fid); const d = act === 'inc' ? f.step : -f.step; f.value = Math.max(0, Math.round((Number(f.value) + d) * 100) / 100); render(); return; }
-      case 'rmfield': ex.fields = ex.fields.filter((f) => f.id != fid); render(); return;
+      case 'inc': case 'dec': { const f = findField(ex, fid); const d = act === 'inc' ? f.step : -f.step; f.value = Math.max(0, Math.round((Number(f.value) + d) * 100) / 100); render(); tkLogic.saveTemplate(state); return; }
+      case 'rmfield': ex.fields = ex.fields.filter((f) => f.id != fid); render(); tkLogic.saveTemplate(state); return;
       case 'addfield': sheetExId = ex.id; openSheet(); return;
       case 'menu': menuId = (menuId === ex.id ? null : ex.id); render(); return;
-      case 'dup': { const c = JSON.parse(JSON.stringify(ex)); c.id = nid(); c.done = false; c.fields.forEach((f) => (f.id = nid())); const idx = curSec().ex.indexOf(ex); curSec().ex.splice(idx + 1, 0, c); menuId = null; render(); toast('Карточка продублирована'); return; }
+      case 'dup': { const c = JSON.parse(JSON.stringify(ex)); c.id = nid(); c.done = false; c.fields.forEach((f) => (f.id = nid())); const idx = curSec().ex.indexOf(ex); curSec().ex.splice(idx + 1, 0, c); menuId = null; render(); tkLogic.saveTemplate(state); toast('Карточка продублирована'); return; }
       case 'edit': editId = ex.id; menuId = null; render(); return;
       case 'editdone': if (editId === ex.id) editId = null; render(); return;
       case 'del': {
@@ -365,13 +439,15 @@
         if (res.newEditId) editId = res.newEditId;
         toast(res.sectionDeleted ? 'Секция удалена' : 'Упражнение удалено');
         render();
+        tkLogic.saveTemplate(state);
         return;
       }
-      case 'addexc': { const ne = mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)]); curSec().ex.push(ne); editId = ne.id; render(); exBody.scrollTop = exBody.scrollHeight; return; }
+      case 'addexc': { const ne = mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)]); curSec().ex.push(ne); editId = ne.id; render(); tkLogic.saveTemplate(state); exBody.scrollTop = exBody.scrollHeight; return; }
       case 'dot': state.i = +i; menuId = null; editId = null; render(); exBody.scrollTop = 0; return;
       case 'addsec': {
         editId = tkLogic.addSection(state);
         render();
+        tkLogic.saveTemplate(state);
         exBody.scrollTop = 0;
         return;
       }
@@ -394,21 +470,21 @@
     const el = e.target.closest('[data-act]'); if (!el) return;
     if (el.dataset.act === 'comment') { state.comment = el.value; save(); return; }
     const ex = el.dataset.id ? findEx(el.dataset.id) : null;
-    if (el.dataset.act === 'cname' && ex) ex.name = el.textContent;
-    else if (el.dataset.act === 'label' && ex) { const f = findField(ex, el.dataset.fid); if (f) f.label = el.textContent; }
+    if (el.dataset.act === 'cname' && ex) { ex.name = el.textContent; tkLogic.saveTemplate(state); }
+    else if (el.dataset.act === 'label' && ex) { const f = findField(ex, el.dataset.fid); if (f) { f.label = el.textContent; tkLogic.saveTemplate(state); } }
   });
   exBody.addEventListener('focusout', (e) => {
     const el = e.target.closest('[data-act]'); if (!el || el.dataset.act === 'comment') { save(); return; }
     const ex = el.dataset.id ? findEx(el.dataset.id) : null; if (!ex) return;
     const f = el.dataset.fid ? findField(ex, el.dataset.fid) : null;
-    if (el.dataset.act === 'val' && f) { f.value = f.type === 'time' ? parseTime(el.textContent) : Math.max(0, parseFloat(el.textContent) || 0); render(); }
-    else if (el.dataset.act === 'text' && f) { f.value = el.textContent.trim(); save(); }
-    else save();
+    if (el.dataset.act === 'val' && f) { f.value = f.type === 'time' ? parseTime(el.textContent) : Math.max(0, parseFloat(el.textContent) || 0); render(); tkLogic.saveTemplate(state); }
+    else if (el.dataset.act === 'text' && f) { f.value = el.textContent.trim(); save(); tkLogic.saveTemplate(state); }
+    else { save(); tkLogic.saveTemplate(state); }
   });
 
-  $('#sname').addEventListener('input', () => { if (state.mode === 'build') curSec().name = $('#sname').textContent; });
+  $('#sname').addEventListener('input', () => { if (state.mode === 'build') { curSec().name = $('#sname').textContent; tkLogic.saveTemplate(state); } });
   $('#sname').addEventListener('focusout', save);
-  $('#wtitle').addEventListener('input', () => { if (state.mode === 'build') state.title = $('#wtitle').textContent; });
+  $('#wtitle').addEventListener('input', () => { if (state.mode === 'build') { state.title = $('#wtitle').textContent; tkLogic.saveTemplate(state); } });
 
   /* ---------------- add-field sheet ---------------- */
   const sheet = $('#sheet'), scrim = $('#scrim'), tchips = $('#tchips');
@@ -419,13 +495,13 @@
   function closeSheet() { scrim.classList.remove('open'); sheet.classList.remove('open'); }
   function resetCustom() { $('#cName').value = ''; $('#cUnit').value = ''; custType = 'num'; Array.from($('#cType').children).forEach((b) => b.classList.toggle('on', b.dataset.t === 'num')); $('#cUnit').style.display = ''; }
   scrim.addEventListener('click', closeSheet);
-  tchips.addEventListener('click', (e) => { const b = e.target.closest('[data-tpl]'); if (!b || b.classList.contains('disabled')) return; const ex = sheetEx(); if (!ex) return; const t = tpl(b.dataset.tpl); ex.fields.push(mkField(t)); closeSheet(); render(); toast('Поле «' + t.label + '» добавлено'); });
+  tchips.addEventListener('click', (e) => { const b = e.target.closest('[data-tpl]'); if (!b || b.classList.contains('disabled')) return; const ex = sheetEx(); if (!ex) return; const t = tpl(b.dataset.tpl); ex.fields.push(mkField(t)); tkLogic.saveTemplate(state); closeSheet(); render(); toast('Поле «' + t.label + '» добавлено'); });
   $('#cType').addEventListener('click', (e) => { const b = e.target.closest('[data-t]'); if (!b) return; custType = b.dataset.t; Array.from($('#cType').children).forEach((x) => x.classList.toggle('on', x === b)); $('#cUnit').style.display = custType === 'num' ? '' : 'none'; });
-  $('#cAdd').addEventListener('click', () => { const name = $('#cName').value.trim(); if (!name) { toast('Введите название поля'); $('#cName').focus(); return; } const ex = sheetEx(); if (!ex) return; const unit = custType === 'num' ? $('#cUnit').value.trim() : ''; ex.fields.push(mkField({ key: 'custom', label: name, unit, type: custType, step: custType === 'time' ? 5 : 1, def: custType === 'text' ? '' : 0 })); closeSheet(); render(); toast('Поле «' + name + '» добавлено'); });
+  $('#cAdd').addEventListener('click', () => { const name = $('#cName').value.trim(); if (!name) { toast('Введите название поля'); $('#cName').focus(); return; } const ex = sheetEx(); if (!ex) return; const unit = custType === 'num' ? $('#cUnit').value.trim() : ''; ex.fields.push(mkField({ key: 'custom', label: name, unit, type: custType, step: custType === 'time' ? 5 : 1, def: custType === 'text' ? '' : 0 })); tkLogic.saveTemplate(state); closeSheet(); render(); toast('Поле «' + name + '» добавлено'); });
 
   let tt; function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 1700); }
 
-  syncHistory();
+  syncAll();
   render();
   if (state.mode === 'active') startTimer();
 })();

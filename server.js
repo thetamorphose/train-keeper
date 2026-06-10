@@ -18,10 +18,10 @@ const DB_FILE = env === 'test'
 /**
  * Initialize lowdb for history persistence
  */
-const defaultData = { history: [] };
+const defaultData = { history: [], templates: [] };
 const db = await JSONFilePreset(DB_FILE, defaultData);
 
-const app = express();
+export const app = express();
 
 // Middleware
 app.use(cors());
@@ -59,6 +59,52 @@ app.post('/api/history', async (req, res) => {
 });
 
 /**
+ * GET /api/templates - Retrieve all workout templates
+ */
+app.get('/api/templates', (req, res) => {
+  res.json(db.data.templates || []);
+});
+
+/**
+ * POST /api/templates - Create a new workout template
+ */
+app.post('/api/templates', async (req, res) => {
+  const template = {
+    id: crypto.randomUUID(),
+    title: req.body.title || 'Новый список',
+    sections: req.body.sections || [],
+    createdAt: Date.now()
+  };
+  db.data.templates = db.data.templates || [];
+  db.data.templates.unshift(template);
+  await db.write();
+  res.status(201).json(template);
+});
+
+/**
+ * PUT /api/templates/:id - Update an existing template
+ */
+app.put('/api/templates/:id', async (req, res) => {
+  const { id } = req.params;
+  const idx = db.data.templates.findIndex(t => t.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  
+  db.data.templates[idx] = { ...db.data.templates[idx], ...req.body, id };
+  await db.write();
+  res.json(db.data.templates[idx]);
+});
+
+/**
+ * DELETE /api/templates/:id - Delete a template
+ */
+app.delete('/api/templates/:id', async (req, res) => {
+  const { id } = req.params;
+  db.data.templates = db.data.templates.filter(t => t.id !== id);
+  await db.write();
+  res.json({ success: true });
+});
+
+/**
  * Helper to get local IP address for mobile access
  * @returns {string} Local IPv4 address or 'localhost'
  */
@@ -82,11 +128,13 @@ function getLocalIP() {
   return candidates[0] || 'localhost';
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-  const localIP = getLocalIP();
-  console.log('--------------------------------------------------');
-  console.log(`Train Keeper Server is running!`);
-  console.log(`Local access: http://localhost:${PORT}`);
-  console.log(`Mobile access: http://${localIP}:${PORT}`);
-  console.log('--------------------------------------------------');
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, '0.0.0.0', () => {
+    const localIP = getLocalIP();
+    console.log('--------------------------------------------------');
+    console.log(`Train Keeper Server is running!`);
+    console.log(`Local access: http://localhost:${PORT}`);
+    console.log(`Mobile access: http://${localIP}:${PORT}`);
+    console.log('--------------------------------------------------');
+  });
+}
