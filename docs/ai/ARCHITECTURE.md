@@ -6,8 +6,13 @@ Train Keeper is a mobile-first workout tracker focused on a "Focus Mode" UX wher
 ## File Map
 - `/server.js`: Entry point for the backend. Handles Express routes and LowDB persistence.
 - `/tk-app.js`: Main frontend entry point and global state management.
-- `/tk-focus.js`: Specialized logic for the Focus-mode UI (swiping between sections).
+- `/tk-focus.js`: Specialized logic for the Focus-mode UI. Contains `tkLogic` object for testable state mutations.
 - `/tk-focus-tweaks.jsx`: React-based UI for real-time styling adjustments (Tweaks).
+
+## State Management & Testing
+The application uses a "Pure Logic" approach for state mutations to facilitate TDD:
+- **`tkLogic`**: An internal object within `tk-focus.js` (exposed as `window.__tkLogic` in test environments) that contains pure functions for mutating the workout state (e.g., `addSection`, `deleteExercise`).
+- **TDD Workflow**: All state-changing logic must be implemented in `tkLogic` and covered by Jest tests in the `/__tests__` directory before being integrated into the UI handlers.
 - `/tk-focus.css`: Styles specifically for the Focus mode.
 - `/docs/ai/`: Detailed documentation for AI agents.
 

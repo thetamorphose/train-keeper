@@ -99,6 +99,35 @@
   const curSec = () => state.sections[state.i];
   const findEx = (id) => curSec().ex.find((e) => e.id == id);
   const findField = (ex, fid) => ex.fields.find((f) => f.id == fid);
+
+  const tkLogic = {
+    addSection(state) {
+      const ne = mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)]);
+      state.sections.push({ name: 'Новая секция', ex: [ne] });
+      state.i = state.sections.length - 1;
+      return ne.id;
+    },
+    deleteExercise(state, id) {
+      const sec = state.sections[state.i];
+      sec.ex = sec.ex.filter((x) => x.id != id);
+      let res = { sectionDeleted: false, newEditId: null };
+      if (sec.ex.length === 0) {
+        state.sections.splice(state.i, 1);
+        res.sectionDeleted = true;
+        if (state.sections.length === 0) {
+          const ne = mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)]);
+          state.sections.push({ name: 'Новая секция', ex: [ne] });
+          state.i = 0;
+          res.newEditId = ne.id;
+        } else if (state.i >= state.sections.length) {
+          state.i = state.sections.length - 1;
+        }
+      }
+      return res;
+    }
+  };
+  if (typeof window !== 'undefined') window.__tkLogic = tkLogic;
+
   const dispVal = (f, v) => (f.type === 'time' ? mmss(v) : fmt(v)) + (f.type !== 'time' && f.unit ? ' ' + f.unit : '');
   const isDiff = (f) => { if (f.plan === undefined) return false; if (f.type === 'text') return String(f.value || '') !== String(f.plan || ''); return Number(f.value) !== Number(f.plan); };
 
@@ -329,10 +358,23 @@
       case 'dup': { const c = JSON.parse(JSON.stringify(ex)); c.id = nid(); c.done = false; c.fields.forEach((f) => (f.id = nid())); const idx = curSec().ex.indexOf(ex); curSec().ex.splice(idx + 1, 0, c); menuId = null; render(); toast('Карточка продублирована'); return; }
       case 'edit': editId = ex.id; menuId = null; render(); return;
       case 'editdone': if (editId === ex.id) editId = null; render(); return;
-      case 'del': curSec().ex = curSec().ex.filter((x) => x.id != id); menuId = null; if (editId == id) editId = null; render(); toast('Упражнение удалено'); return;
+      case 'del': {
+        const res = tkLogic.deleteExercise(state, id);
+        menuId = null;
+        if (editId == id) editId = null;
+        if (res.newEditId) editId = res.newEditId;
+        toast(res.sectionDeleted ? 'Секция удалена' : 'Упражнение удалено');
+        render();
+        return;
+      }
       case 'addexc': { const ne = mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)]); curSec().ex.push(ne); editId = ne.id; render(); exBody.scrollTop = exBody.scrollHeight; return; }
       case 'dot': state.i = +i; menuId = null; editId = null; render(); exBody.scrollTop = 0; return;
-      case 'addsec': state.sections.push({ name: 'Новая секция', ex: [] }); state.i = state.sections.length - 1; editId = null; render(); return;
+      case 'addsec': {
+        editId = tkLogic.addSection(state);
+        render();
+        exBody.scrollTop = 0;
+        return;
+      }
       case 'startworkout': startWorkout(); return;
       case 'closesummary': closeSummary(); return;
       case 'nextsec': {

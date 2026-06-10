@@ -9,7 +9,7 @@ Focus on the core "Focus Mode" workout experience with section-based navigation 
 - [x] Initial Project Setup (Node.js, Express, LowDB)
 - [x] AI Documentation Framework (Rules, Architecture, Roadmap)
 - [x] Jest Testing Environment Setup
-- [ ] Implement Comprehensive Tests for core User Flows (TDD)
+- [x] Implement Comprehensive Tests for core User Flows (TDD)
 - [ ] Refactor codebase and tests using Context-7 documentation and Agent Skills
 - [ ] Expand and complete the Domain Glossary in GEMINI.md
 - [ ] Basic API for Workout Management (CRUD)
@@ -20,7 +20,7 @@ Focus on the core "Focus Mode" workout experience with section-based navigation 
 - [ ] Dynamic Field Management (Add/Edit/Duplicate fields)
 - [ ] "Next Section" Navigation logic (Enabled only after section completion)
 - [ ] Duplicate/Edit Exercise Card functionality
-- [ ] Section Management (Add/Delete sections within a workout)
+- [x] Section Management (Add/Delete sections within a workout)
 
 ### Workout Organization
 - [ ] Workout Lists/Groups (Create, delete, and organize workouts into folders/lists)
