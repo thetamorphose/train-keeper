@@ -56,3 +56,11 @@ All notable changes to this project will be documented in this file.
 - Project Roadmap and User Flows documentation.
 - ADR system for recording technical decisions.
 - Initial Jest test suite with sanity test to fix CI pipeline.
+
+### Changed
+- Remove Mobile Wireframe Layout Wrapper:
+  - Removed the outer mock mobile phone container (`.phone`) and status bar (`.notch`) from the HTML.
+  - Updated the application container (`.screen`) to be fully fluid and responsive.
+  - On mobile screens, the app occupies 100% of the viewport and hides auxiliary descriptions/footers.
+  - On desktop screens, it is styled as a centered glassmorphism card (max-width `540px`, height `85vh`, rounded corners `24px` matching the Fluid Utility style guidelines).
+  - Fully verified using Jest in `__tests__/layout.test.js`.

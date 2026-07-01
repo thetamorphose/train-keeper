@@ -40,7 +40,7 @@ Focus on the core "Focus Mode" workout experience with section-based navigation 
 - [ ] High-Fi Glassmorphism Styling
 - [ ] Real-time "Tweaks" Panel integration
 - [ ] Mobile-first Responsive Optimization
-- [ ] Remove mobile wireframe layout wrapper
+- [x] Remove mobile wireframe layout wrapper
 
 ### Future Goals
 - [ ] Workout History & Analytics
