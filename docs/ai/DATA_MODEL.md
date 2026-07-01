@@ -10,6 +10,7 @@ A reusable blueprint for a workout (Workout List). Stored in the `templates` col
 | :--- | :--- | :--- |
 | `id` | `string (uuid)` | Unique identifier. |
 | `title` | `string` | Name of the template (e.g., "Leg Day"). |
+| `type` | `string` | Type of template list: `'workout'` (default) or `'habit'`. |
 | `description` | `string` | Notes/technique tips for the workout template. |
 | `sections` | `Array<Section>` | Blueprint of sections and exercises. |
 | `createdAt` | `number (timestamp)` | Creation time. |
@@ -22,6 +23,7 @@ The root entity representing a single training session.
 | `id` | `string (uuid)` | Unique identifier. |
 | `listId` | `string (uuid)` | ID of the Workout List it belongs to (optional). |
 | `title` | `string` | User-defined name of the workout. |
+| `type` | `string` | Type of list: `'workout'` (default) or `'habit'`. |
 | `description` | `string` | Description or technique tips inherited from template. |
 | `date` | `number (timestamp)` | When the workout was completed (only in history). |
 | `startedAt` | `number (timestamp)` | When the workout was started. |

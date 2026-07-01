@@ -66,6 +66,7 @@
    */
   const DEFAULT = () => ({
     mode: 'home', history: [], templates: [], activeTemplateId: null, title: 'Кросс-день', description: '',
+    type: 'workout',
     i: 0, comment: '', startedAt: 0, elapsed: 0,
     sections: [
       { name: 'Разминка', ex: [
@@ -132,6 +133,7 @@
     if (!state.templates) state.templates = [];
     if (!state.title) state.title = 'Кросс-день';
     if (!state.description) state.description = '';
+    if (!state.type) state.type = 'workout';
     state.sections.forEach((s) => s.ex.forEach((e) => {
       if (e.id >= _id) _id = e.id + 1;
       if (e.skipped === undefined) e.skipped = false;
@@ -200,20 +202,25 @@
         }
       } catch (e) { console.error('Fetch templates failed:', e); }
     },
-    async createNewTemplate(state) {
+    async createNewTemplate(state, type = 'workout') {
       try {
+        const title = type === 'habit' ? 'Новый список привычек' : 'Новый список';
         const res = await fetch('/api/templates', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: 'Новый список', sections: [] })
+          body: JSON.stringify({ title, type, sections: [] })
         });
         if (res.ok) {
           const t = await res.json();
           state.templates.unshift(t);
           state.activeTemplateId = t.id;
           state.title = t.title;
+          state.type = t.type || 'workout';
           state.sections = t.sections.length ? t.sections : [
-            { name: 'Новая секция', ex: [mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)])] }
+            { 
+              name: type === 'habit' ? 'Привычки' : 'Новая секция', 
+              ex: [mkEx(type === 'habit' ? 'Новая привычка' : 'Новое упражнение', [mkField(tpl(type === 'habit' ? 'время' : 'повторения'), 10)])] 
+            }
           ];
           state.mode = 'build';
           state.i = 0;
@@ -226,7 +233,7 @@
         await fetch('/api/templates/' + state.activeTemplateId, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: state.title, sections: state.sections, description: state.description })
+          body: JSON.stringify({ title: state.title, type: state.type || 'workout', sections: state.sections, description: state.description })
         });
       } catch (e) { console.error('Save template failed:', e); }
     },
@@ -253,6 +260,7 @@
     window.__tkLogic = tkLogic;
     window.__tkState = state;
     window.initSetsForExercise = initSetsForExercise;
+    window.__tkRender = render;
   }
 
   const dispVal = (f, v) => (f.type === 'time' ? mmss(v) : fmt(v)) + (f.type !== 'time' && f.unit ? ' ' + f.unit : '');
@@ -304,10 +312,11 @@
   function cardHTML(ex) {
     const active = state.mode === 'active';
     const editing = ex.id === editId && state.mode === 'build';
-    const cls = 'card' + (active ? ' tappable' : '') + (active && ex.done ? ' done' : '') + (active && ex.skipped ? ' skipped' : '') + (editing ? ' editing' : '');
-    let h = '<div class="' + cls + '"' + (active ? ' data-act="toggle" data-id="' + ex.id + '"' : '') + '>';
+    const canCheck = active || (state.type === 'habit' && state.mode === 'build' && !editing);
+    const cls = 'card' + (canCheck ? ' tappable' : '') + ((active || state.type === 'habit') && ex.done ? ' done' : '') + ((active || state.type === 'habit') && ex.skipped ? ' skipped' : '') + (editing ? ' editing' : '');
+    let h = '<div class="' + cls + '"' + (canCheck ? ' data-act="toggle" data-id="' + ex.id + '"' : '') + '>';
     h += '<div class="card-top">';
-    if (active) {
+    if (canCheck) {
       if (ex.skipped) h += '<span class="check skipped">✕</span>';
       else h += '<span class="check">✓</span>';
     }
@@ -319,7 +328,7 @@
     } else if (ex.notes) {
       h += '<div class="ex-notes-display">📝 ' + esc(ex.notes) + '</div>';
     }
-    if (active && ex.sets && ex.sets.length > 0) {
+    if (canCheck && ex.sets && ex.sets.length > 0) {
       const planStr = ex.fields.map(f => {
         if (f.key === 'подходы') return f.value + ' подх.';
         return f.value + (f.unit ? ' ' + f.unit : '');
@@ -362,9 +371,13 @@
       }
     }));
     let h = '<div class="summary">';
-    h += '<div class="sumhead"><div class="big">Тренировка завершена</div>' +
-      '<div class="sub">⏱ ' + mmss(Math.floor(state.elapsed / 1000)) + ' · ' +
-      (diffs ? '<span class="hl">' + diffs + ' откл. от плана</span>' : 'всё по плану') + '</div></div>';
+    const isHabit = state.type === 'habit';
+    const titleText = isHabit ? 'Чек-лист выполнен' : 'Тренировка завершена';
+    const subText = isHabit 
+      ? (diffs ? '<span class="hl">' + diffs + ' откл. от плана</span>' : 'всё выполнено') 
+      : ('⏱ ' + mmss(Math.floor(state.elapsed / 1000)) + ' · ' + (diffs ? '<span class="hl">' + diffs + ' откл. от плана</span>' : 'всё по плану'));
+    h += '<div class="sumhead"><div class="big">' + titleText + '</div>' +
+      '<div class="sub">' + subText + '</div></div>';
     state.sections.forEach((s) => {
       h += '<table class="rtable"><tr class="sech"><td>' + esc(s.name) + '</td><td class="hd">План</td><td class="hd">Факт</td></tr>';
       s.ex.forEach((e) => {
@@ -419,27 +432,35 @@
   function homeHTML() {
     let h = '<div class="home">';
     
-    h += '<div class="h-head">Мои списки тренировок</div>';
+    h += '<div class="h-head">Мои списки</div>';
     if (!state.templates || state.templates.length === 0) {
       h += '<div class="h-empty">У вас пока нет списков. Создайте первый!</div>';
     } else {
       h += '<div class="h-list templates">' + state.templates.map((t) => {
+        const isHabit = t.type === 'habit';
+        const typeBadge = isHabit 
+          ? '<span class="h-badge habit">привычки</span>' 
+          : '<span class="h-badge">тренировка</span>';
         return '<div class="h-item template" data-act="viewtemplate" data-tid="' + t.id + '">' +
-          '<div class="h-top"><span class="h-title">' + esc(t.title || 'Без названия') + '</span><span class="h-arrow">›</span></div>' +
+          '<div class="h-top"><span class="h-title">' + esc(t.title || 'Без названия') + '</span>' + typeBadge + '<span class="h-arrow">›</span></div>' +
           '<div class="h-stats">' + (t.sections ? t.sections.length : 0) + ' секций</div>' +
           '</div>';
       }).join('') + '</div>';
     }
-    h += '<div class="h-actions"><button class="secbtn go" data-act="createtemplate">＋ Новый список</button></div>';
+    h += '<div class="h-actions" style="display:flex; flex-direction:column; gap:8px;">' +
+      '<button class="secbtn go" data-act="createtemplate" data-type="workout">＋ Новый список тренировок</button>' +
+      '<button class="secbtn finish" data-act="createtemplate" data-type="habit">＋ Новый список привычек</button>' +
+      '</div>';
 
     h += '<div class="h-head" style="margin-top: 32px">История</div>';
     if (!state.history || state.history.length === 0) {
       h += '<div class="h-empty">История пока пуста.</div>';
     } else {
       h += '<div class="h-list">' + state.history.map((h, idx) => {
+        const stats = h.type === 'habit' ? 'привычки' : '⏱ ' + mmss(Math.floor(h.elapsed / 1000));
         return '<div class="h-item" data-act="viewhistory" data-i="' + idx + '">' +
           '<div class="h-top"><span class="h-title">' + esc(h.title || 'Тренировка') + '</span><span class="h-date">' + new Date(h.date).toLocaleDateString() + '</span></div>' +
-          '<div class="h-stats">⏱ ' + mmss(Math.floor(h.elapsed / 1000)) + '</div>' +
+          '<div class="h-stats">' + stats + '</div>' +
           '</div>';
       }).join('') + '</div>';
     }
@@ -508,22 +529,51 @@
     const total = sec.ex.length, done = sec.ex.filter((e) => e.done).length;
     crumb.textContent = mode === 'active' ? 'Активная тренировка' : 'Создание тренировки';
     wtitle.contentEditable = mode === 'build' ? 'true' : 'false';
+    
     if (mode === 'active') { wpill.className = 'timer mono'; wpill.textContent = '⏱ ' + mmss(Math.floor((Date.now() - state.startedAt) / 1000)); }
-    else { wpill.className = 'timer draft mono'; wpill.textContent = 'черновик'; }
+    else { 
+      wpill.className = 'timer draft mono'; 
+      wpill.textContent = state.type === 'habit' ? 'привычки' : 'черновик'; 
+    }
+    const showProgress = mode === 'active' || (mode === 'build' && state.type === 'habit');
     $('#ssub').textContent = 'Секция ' + (state.i + 1) + ' из ' + state.sections.length +
-      (mode === 'active' ? ' · выполнено ' + done + '/' + total : ' · ' + total + ' упр.');
+      (showProgress ? ' · выполнено ' + done + '/' + total : ' · ' + total + ' упр.');
 
     let h = sec.ex.map(cardHTML).join('');
     if (mode === 'build') h += '<div class="addexc" data-act="addexc">＋ упражнение</div>';
     exBody.innerHTML = h;
 
     dots.innerHTML = state.sections.map((s, k) => {
-      const full = mode === 'active' && s.ex.length && s.ex.every((e) => e.done);
+      const full = (mode === 'active' || state.type === 'habit') && s.ex.length && s.ex.every((e) => e.done || e.skipped);
       return '<i class="' + (k === state.i ? 'on ' : '') + (full ? 'full' : '') + '" data-act="dot" data-i="' + k + '"></i>';
     }).join('') + (mode === 'build' ? '<i class="addx" data-act="addsec" title="добавить секцию"></i>' : '');
 
     const btn = $('#secbtn'), last = state.i === state.sections.length - 1;
-    if (mode === 'build') { btn.className = 'secbtn go'; btn.dataset.act = 'startworkout'; btn.textContent = '▶ Начать тренировку'; }
+    if (mode === 'build') { 
+      if (state.type === 'habit') {
+        if (done === 0) {
+          btn.className = 'secbtn reset-btn'; 
+          btn.dataset.act = 'resethabits'; 
+          btn.textContent = 'Сбросить отметки';
+        } else if (done < total) {
+          btn.className = 'secbtn ghost'; 
+          btn.dataset.act = 'nextsec'; 
+          btn.textContent = 'Выполнено ' + done + ' из ' + total;
+        } else if (!last) {
+          btn.className = 'secbtn go'; 
+          btn.dataset.act = 'nextsec'; 
+          btn.textContent = 'Следующая секция →';
+        } else {
+          btn.className = 'secbtn finish'; 
+          btn.dataset.act = 'nextsec'; 
+          btn.textContent = '✓ Завершить';
+        }
+      } else {
+        btn.className = 'secbtn go'; 
+        btn.dataset.act = 'startworkout'; 
+        btn.textContent = '▶ Начать тренировку'; 
+      }
+    }
     else if (total === 0) { btn.className = 'secbtn ghost'; btn.dataset.act = 'nextsec'; btn.textContent = 'Нет упражнений'; }
     else if (done < total) { btn.className = 'secbtn ghost'; btn.dataset.act = 'nextsec'; btn.textContent = 'Выполнено ' + done + ' из ' + total; }
     else if (!last) { btn.className = 'secbtn go'; btn.dataset.act = 'nextsec'; btn.textContent = 'Следующая секция →'; }
@@ -553,7 +603,7 @@
   /**
    * Transition from 'active' to 'summary' mode
    */
-  function finishWorkout() { state.mode = 'summary'; state.elapsed = Date.now() - state.startedAt; stopTimer(); render(); exBody.scrollTop = 0; }
+  function finishWorkout() { state.mode = 'summary'; state.elapsed = state.type === 'habit' ? 0 : Date.now() - state.startedAt; stopTimer(); render(); exBody.scrollTop = 0; }
   
   /**
    * Handle summary closure: either save to history or return from history view
@@ -575,6 +625,7 @@
     }
     const finished = {
       title: state.title || $('#wtitle').textContent || 'Тренировка',
+      type: state.type || 'workout',
       date: Date.now(),
       elapsed: state.elapsed,
       comment: state.comment,
@@ -591,7 +642,20 @@
     state.mode = 'home';
     state.i = 0;
     state.comment = '';
-    state.sections.forEach((s) => s.ex.forEach((e) => { e.done = false; e.fields.forEach((f) => { if (f.plan !== undefined) f.value = f.plan; }); }));
+    state.sections.forEach((s) => s.ex.forEach((e) => { 
+      e.done = false; 
+      e.skipped = false;
+      if (e.sets) {
+        e.sets.forEach((set) => {
+          set.done = false;
+          set.skipped = false;
+        });
+      }
+      e.fields.forEach((f) => { if (f.plan !== undefined) f.value = f.plan; }); 
+    }));
+    if (state.type === 'habit') {
+      tkLogic.saveTemplate(state);
+    }
     render(); exBody.scrollTop = 0;
   }
 
@@ -646,11 +710,13 @@
   }
 
   document.addEventListener('mousedown', (e) => {
+    if (!e.target || typeof e.target.closest !== 'function') return;
     const el = e.target.closest('[data-act="toggle"], [data-act="set-row"], [data-act="set-toggle"]');
     if (el) startPress(e, el);
   });
 
   document.addEventListener('touchstart', (e) => {
+    if (!e.target || typeof e.target.closest !== 'function') return;
     const el = e.target.closest('[data-act="toggle"], [data-act="set-row"], [data-act="set-toggle"]');
     if (el) startPress(e, el);
   }, { passive: true });
@@ -684,6 +750,7 @@
       e.stopPropagation();
       return;
     }
+    if (!e.target || typeof e.target.closest !== 'function') return;
     if (menuId !== null && !e.target.closest('.kmenu') && !(e.target.closest('[data-act]') && e.target.closest('[data-act]').dataset.act === 'menu')) { menuId = null; render(); return; }
     const el = e.target.closest('[data-act]'); if (!el) return;
     const act = el.dataset.act,
@@ -708,15 +775,23 @@
         return;
       }
       case 'newworkout': state.mode = 'build'; render(); return;
-      case 'createtemplate': tkLogic.createNewTemplate(state).then(render); return;
+      case 'createtemplate': {
+        const type = el.dataset.type || 'workout';
+        tkLogic.createNewTemplate(state, type).then(render);
+        return;
+      }
       case 'viewtemplate': {
         const t = state.templates.find(x => x.id === tid);
         if (t) {
           state.activeTemplateId = t.id;
           state.title = t.title;
+          state.type = t.type || 'workout';
           state.description = t.description || '';
           state.sections = t.sections.length ? JSON.parse(JSON.stringify(t.sections)) : [
-            { name: 'Новая секция', ex: [mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)])] }
+            { 
+              name: t.type === 'habit' ? 'Привычки' : 'Новая секция', 
+              ex: [mkEx(t.type === 'habit' ? 'Новая привычка' : 'Новое упражнение', [mkField(tpl(t.type === 'habit' ? 'время' : 'повторения'), 10)])] 
+            }
           ];
           state.mode = 'build';
           state.i = 0;
@@ -732,17 +807,22 @@
         render(); return;
       }
       case 'toggle':
-        if (state.mode === 'active' && ex) {
+        if ((state.mode === 'active' || (state.mode === 'build' && state.type === 'habit')) && ex) {
+          if (ex.id === editId) return;
           if (!ex.sets || ex.sets.length === 0) {
             ex.done = !ex.done;
             if (ex.done) ex.skipped = false;
             render();
+            if (state.mode === 'build' && state.type === 'habit') {
+              tkLogic.saveTemplate(state);
+            }
           }
         }
         return;
       case 'set-toggle':
       case 'set-row':
-        if (state.mode === 'active' && ex && setId) {
+        if ((state.mode === 'active' || (state.mode === 'build' && state.type === 'habit')) && ex && setId) {
+          if (ex.id === editId) return;
           const set = ex.sets.find(s => s.id == setId);
           if (set) {
             set.done = !set.done;
@@ -750,6 +830,9 @@
             ex.done = ex.sets.every(s => s.done || s.skipped);
             ex.skipped = ex.sets.every(s => s.skipped);
             render();
+            if (state.mode === 'build' && state.type === 'habit') {
+              tkLogic.saveTemplate(state);
+            }
           }
         }
         return;
@@ -822,8 +905,24 @@
       }
       case 'startworkout': startWorkout(); return;
       case 'closesummary': closeSummary(); return;
+      case 'resethabits': {
+        state.sections.forEach((s) => s.ex.forEach((e) => {
+          e.done = false;
+          e.skipped = false;
+          if (e.sets) {
+            e.sets.forEach((set) => {
+              set.done = false;
+              set.skipped = false;
+            });
+          }
+        }));
+        render();
+        tkLogic.saveTemplate(state);
+        toast('Отметки сброшены');
+        return;
+      }
       case 'nextsec': {
-        if (state.mode !== 'active') return;
+        if (state.mode !== 'active' && !(state.mode === 'build' && state.type === 'habit')) return;
         const sec = curSec(); if (!sec.ex.length || !sec.ex.every((x) => x.done || x.skipped)) return;
         if (state.i < state.sections.length - 1) { state.i++; render(); exBody.scrollTop = 0; }
         else finishWorkout();
@@ -836,6 +935,7 @@
   $('[data-next]').addEventListener('click', () => { if (state.mode === 'summary') return; state.i = (state.i + 1) % state.sections.length; menuId = null; editId = null; render(); exBody.scrollTop = 0; });
 
   exBody.addEventListener('input', (e) => {
+    if (!e.target || typeof e.target.closest !== 'function') return;
     const el = e.target.closest('[data-act]'); if (!el) return;
     if (el.dataset.act === 'comment') { state.comment = el.value; save(); return; }
     if (el.dataset.act === 'exnotes') {
@@ -849,6 +949,7 @@
     else if (el.dataset.act === 'label' && ex) { const f = findField(ex, el.dataset.fid); if (f) { f.label = el.textContent; tkLogic.saveTemplate(state); } }
   });
   exBody.addEventListener('focusout', (e) => {
+    if (!e.target || typeof e.target.closest !== 'function') return;
     const el = e.target.closest('[data-act]'); if (!el || el.dataset.act === 'comment' || el.dataset.act === 'exnotes') { save(); return; }
     const exId = el.dataset.id || el.dataset.exId;
     const ex = exId ? findEx(exId) : null; if (!ex) return;

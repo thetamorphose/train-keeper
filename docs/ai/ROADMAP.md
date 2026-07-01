@@ -47,5 +47,5 @@ Focus on the core "Focus Mode" workout experience with section-based navigation 
 - [ ] User Authentication & Sync
 - [ ] Offline Mode (Service Workers)
 - [ ] Exercise Library / Templates
-- [ ] Habit Tracking: simple checklist functionality without starting a full workout session
+- [x] Habit Tracking: simple checklist functionality without starting a full workout session
 

@@ -74,6 +74,7 @@ app.post('/api/templates', async (req, res) => {
   const template = {
     id: crypto.randomUUID(),
     title: req.body.title || 'Новый список',
+    type: req.body.type || 'workout',
     sections: req.body.sections || [],
     createdAt: Date.now()
   };

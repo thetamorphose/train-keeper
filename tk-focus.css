@@ -466,3 +466,34 @@ body:not(.clean) .set-row {
   border-bottom: 1.5px dashed var(--line) !important;
 }
 
+/* ---------------- habit checklist badges and reset button ---------------- */
+.h-badge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1.5px solid var(--ink);
+  background: color-mix(in srgb, var(--accent) 15%, var(--card));
+  color: var(--accent-ink);
+  font-weight: 700;
+  margin-left: auto;
+  margin-right: 8px;
+  align-self: center;
+}
+body:not(.clean) .h-badge {
+  border-radius: 8px 4px 7px 5px/5px 7px 4px 8px;
+}
+.h-badge.habit {
+  background: color-mix(in srgb, var(--coral) 15%, var(--card));
+  color: var(--coral);
+}
+.secbtn.reset-btn {
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+}
+.secbtn.reset-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 3px 0 rgba(43, 42, 40, .16);
+}
+
+

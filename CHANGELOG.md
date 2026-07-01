@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- Habit Tracking checklist functionality:
+  - Supports creating "habit lists" distinct from workout templates.
+  - Merges Build and Focus/Active modes, allowing habits to be checked/skipped directly in build mode without starting a workout session.
+  - Adds visual differentiation with type badges ("привычки" vs "тренировка").
+  - Includes a "Сбросить отметки" button to clear completion statuses on habits and sets.
+  - Integrates section-by-section completion navigation for habit lists.
+  - Adds a finishing (summary) screen on final section completion, including well-being selection, comments, and saving to history (with hidden duration timer).
+  - Automatically resets checklist states on the template upon completing and saving the checklist.
+  - Exposes templates with `type: 'habit'` via POST and PUT API.
+  - Covers habit checklist flows with automated tests in `__tests__/habits.test.js`.
 - Optional Sets (Подходы) modeled as a Task-Subtask tree:
   - If the "Подходы" (Sets) field is present, the app initializes checkable set subtasks inside the exercise card.
   - Subtask sets inherit fields (weight, reps, time, etc.) from the parent exercise card.
