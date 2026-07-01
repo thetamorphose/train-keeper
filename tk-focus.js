@@ -282,6 +282,21 @@
     const mode = state.mode;
     const snav = $('#snav'), dots = $('#dots'), wtitle = $('#wtitle'), wpill = $('#wpill'), crumb = $('#crumb');
 
+    const backBtn = $('#backBtn') || (() => {
+      const btn = document.createElement('button');
+      btn.id = 'backBtn';
+      btn.className = 'back-btn';
+      btn.dataset.act = 'back';
+      btn.textContent = '← Назад';
+      if (crumb && crumb.parentNode) {
+        crumb.parentNode.insertBefore(btn, crumb);
+      } else {
+        document.body.appendChild(btn);
+      }
+      return btn;
+    })();
+    backBtn.style.display = mode === 'build' ? '' : 'none';
+
     if (mode === 'home') {
       snav.style.display = 'none'; dots.style.display = 'none';
       crumb.textContent = 'Главная';
@@ -401,6 +416,18 @@
     const ex = id ? findEx(id) : null;
     switch (act) {
       case 'val': case 'text': case 'label': case 'cname': case 'secname': case 'comment': return;
+      case 'back': {
+        if (state.mode !== 'build') return;
+        save();
+        tkLogic.saveTemplate(state);
+        state.activeTemplateId = null;
+        state.i = 0;
+        state.mode = 'home';
+        editId = null;
+        menuId = null;
+        render();
+        return;
+      }
       case 'newworkout': state.mode = 'build'; render(); return;
       case 'createtemplate': tkLogic.createNewTemplate(state).then(render); return;
       case 'viewtemplate': {

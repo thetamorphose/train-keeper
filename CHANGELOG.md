@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- Navigation Back from Workout Preparation Screen:
+  - Added a "← Назад" back button on the Workout Preparation screen (when in `build` mode).
+  - Configured auto-saving to local storage and the server when returning from prep mode.
+  - Reset activeTemplateId and section index state back to 0 on exit.
 - Section Management in Build Mode:
   - Add new sections with a default exercise via the `+` button in the dots navigation.
   - Automatic deletion of empty sections when the last exercise is removed.

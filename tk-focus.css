@@ -190,3 +190,35 @@ body:not(.clean) .h-item{border-radius:19px 13px 17px 12px/12px 17px 13px 19px;}
 .h-date{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
 .h-stats{font-size:13px;color:var(--muted);font-family:'Space Mono',monospace;}
 .h-actions{margin-top:8px;}
+
+/* back button */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 2.2px solid var(--ink);
+  background: rgba(251, 250, 246, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 16px;
+  padding: 4px 12px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  box-shadow: 2px 2px 0 rgba(43,42,40,.12);
+  transition: transform .1s, box-shadow .1s, background-color .15s;
+}
+.back-btn:hover {
+  background: rgba(17, 153, 138, 0.1);
+}
+.back-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 rgba(43,42,40,.12);
+  background: rgba(17, 153, 138, 0.18);
+}
+body:not(.clean) .back-btn {
+  border-radius: 18px 12px 16px 11px/11px 16px 12px 18px;
+}
