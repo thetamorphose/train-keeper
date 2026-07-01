@@ -18,20 +18,20 @@ Focus on the core "Focus Mode" workout experience with section-based navigation 
 - [ ] Basic API for Workout Management (CRUD)
 
 ### Core Features (Focus Mode)
-- [ ] Section-based Exercise Layout (Swiping between cards)
-- [ ] Exercise Completion Logic (Tap to toggle)
+- [x] Reordering Exercise Cards in Build Mode (Move Up/Down)
+- [x] Exercise Completion Logic (Tap to toggle / Sets subtasks tree completion)
 - [ ] Dynamic Field Management (Add/Edit/Duplicate fields)
 - [ ] "Next Section" Navigation logic (Enabled only after section completion)
 - [ ] Duplicate/Edit Exercise Card functionality
 - [x] Section Management (Add/Delete sections within a workout)
-- [ ] Navigation back from Workout Preparation screen to Workout List
-- [ ] Skip Exercise option ("Not Done" / "Skipped" status instead of decrementing reps to 0)
+- [x] Navigation back from Workout Preparation screen to Workout List
+- [x] Skip Exercise/Sets option ("Not Done" / "Skipped" status instead of decrementing reps to 0)
 - [ ] Post-workout well-being quick options (multi-choice options instead of text-only)
 
 ### Workout Organization
 - [x] Workout Lists/Groups (Create, delete, and organize workouts into folders/lists)
 - [x] Server-backed Templates (CRUD API and real-time frontend sync)
-- [ ] Workout/Template Description field for recording technique nuances and tips
+- [x] Workout/Template Description field for recording technique nuances and tips
 - [ ] Auto-progression: increase values every N workouts based on exercise progression rules
 - [ ] Smart plan adjustment: automatically update planned values when actual performance (fact) exceeds the plan (but not vice versa)
 

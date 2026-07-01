@@ -46,9 +46,11 @@ A specific activity within a section.
 | :--- | :--- | :--- |
 | `id` | `string (uuid)` | Unique identifier. |
 | `name` | `string` | Name of the exercise. |
-| `done` | `boolean` | Completion status. |
+| `done` | `boolean` | Completion status (computed from sets if sets are present). |
 | `skipped` | `boolean` | True if the exercise was skipped ("not done"). |
-| `fields` | `Array<Field>` | Dynamic metrics associated with the exercise. |
+| `notes` | `string` | Notes or technique tips for the exercise. |
+| `fields` | `Array<Field>` | Dynamic metrics associated with the exercise (e.g. Weight, Reps, Sets/Подходы). |
+| `sets` | `Array<Set>` | List of set subtasks if "Подходы" field is present. |
 | `progression` | `Object` | Progression rule (field key, increment step, N frequency, counter). |
 
 ## 5. Field Object
@@ -57,7 +59,7 @@ A specific metric for an exercise (e.g., Weight, Time).
 | Field | Type | Description |
 | :--- | :--- | :--- |
 | `id` | `string (uuid)` | Unique identifier. |
-| `key` | `string` | Template key (e.g., "вес", "custom"). |
+| `key` | `string` | Template key (e.g., "вес", "повторения", "подходы", "custom"). |
 | `label` | `string` | Display label (e.g., "Weight"). |
 | `type` | `enum` | One of: `num`, `time`, `text`. |
 | `value` | `any` | The actual recorded value (number or string). |
@@ -65,7 +67,17 @@ A specific metric for an exercise (e.g., Weight, Time).
 | `unit` | `string` | Unit of measurement (e.g., "kg"). |
 | `step` | `number` | Increment/decrement step for `num` types. |
 
-## 6. Habit Object
+## 6. Set Object
+A subtask of an exercise representing a single set/approach ("подход").
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `string (uuid)` | Unique identifier. |
+| `done` | `boolean` | Completion status of this set. |
+| `skipped` | `boolean` | True if this specific set was skipped. |
+| `fields` | `Array<Field>` | Fields inherited from the parent exercise card (excluding 'подходы'). |
+
+## 7. Habit Object
 A habit tracking checklist item. Stored in the `habits` collection.
 
 | Field | Type | Description |

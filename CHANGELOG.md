@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- Optional Sets (Подходы) modeled as a Task-Subtask tree:
+  - If the "Подходы" (Sets) field is present, the app initializes checkable set subtasks inside the exercise card.
+  - Subtask sets inherit fields (weight, reps, time, etc.) from the parent exercise card.
+  - Set completion statuses are toggled individually; the parent exercise is complete when all sets are done or skipped.
+  - Adjusting the sets field size dynamically scales the subtasks list, preserving existing set progress.
+  - Sets can be edited individually with compact field steppers and text inputs.
+- Exercise Card Reordering in Build Mode:
+  - Added "Переместить вверх" (Move Up) and "Переместить вниз" (Move Down) buttons inside the kebab menu (`⋯`) to easily swap exercise positions in Build Mode.
+- Skipping Logic for Exercises and Sets:
+  - Long press on a card (no sets) or set row (with sets) toggles a `skipped: true` status.
+  - Skipped status is styled with muted colors and is mutually exclusive with done.
+  - Skip status is displayed in the final summary table and factored into section completion.
+- Workout and Exercise Description Fields:
+  - Added a workout-level description field editable in Build Mode.
+  - Added an exercise-level description/notes field editable in Build/Edit Mode and displayed read-only in Active Mode.
+- TDD Tests Coverage:
+  - Added `__tests__/exercise-sets.test.js` verifying the state changes of sets, reordering, skip, and notes logic.
 - Navigation Back from Workout Preparation Screen:
   - Added a "← Назад" back button on the Workout Preparation screen (when in `build` mode).
   - Configured auto-saving to local storage and the server when returning from prep mode.

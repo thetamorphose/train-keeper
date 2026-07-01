@@ -17,6 +17,7 @@
    * @type {Array<{key: string, label: string, unit: string, type: string, step?: number, def: (number|string)}>}
    */
   const TEMPLATES = [
+    { key: 'подходы',     label: 'Подходы',     unit: '',   type: 'num',  step: 1,   def: 3 },
     { key: 'вес',         label: 'Вес',         unit: 'кг', type: 'num',  step: 2.5, def: 60 },
     { key: 'повторения',  label: 'Повторения',  unit: 'раз', type: 'num', step: 1,   def: 10 },
     { key: 'дистанция',   label: 'Дистанция',   unit: 'км', type: 'num',  step: 0.5, def: 5 },
@@ -48,14 +49,23 @@
    * Create a new exercise object
    * @param {string} name 
    * @param {Array} fields 
+   * @param {string} notes
    */
-  const mkEx = (name, fields) => ({ id: nid(), name, done: false, fields: fields || [] });
+  const mkEx = (name, fields, notes = '') => ({
+    id: nid(),
+    name,
+    done: false,
+    skipped: false,
+    notes,
+    fields: fields || [],
+    sets: []
+  });
 
   /**
    * Returns default application state
    */
   const DEFAULT = () => ({
-    mode: 'home', history: [], templates: [], activeTemplateId: null, title: 'Кросс-день',
+    mode: 'home', history: [], templates: [], activeTemplateId: null, title: 'Кросс-день', description: '',
     i: 0, comment: '', startedAt: 0, elapsed: 0,
     sections: [
       { name: 'Разминка', ex: [
@@ -74,6 +84,45 @@
     ],
   });
 
+  function initSetsForExercise(ex) {
+    const setsField = ex.fields.find(f => f.key === 'подходы');
+    if (!setsField) {
+      ex.sets = [];
+      return;
+    }
+    const count = Math.max(1, parseInt(setsField.value) || 1);
+    if (!ex.sets) ex.sets = [];
+    
+    if (ex.sets.length !== count) {
+      if (ex.sets.length < count) {
+        const toAdd = count - ex.sets.length;
+        for (let s = 0; s < toAdd; s++) {
+          const inheritedFields = ex.fields
+            .filter(f => f.key !== 'подходы')
+            .map(f => ({
+              id: nid(),
+              key: f.key,
+              label: f.label,
+              unit: f.unit,
+              type: f.type,
+              step: f.step,
+              value: f.value,
+              plan: f.plan !== undefined ? f.plan : f.value,
+              ph: f.ph
+            }));
+          ex.sets.push({
+            id: nid(),
+            done: false,
+            skipped: false,
+            fields: inheritedFields
+          });
+        }
+      } else {
+        ex.sets = ex.sets.slice(0, count);
+      }
+    }
+  }
+
   const LSKEY = 'tk_focus_v4';
   let state, editId = null, menuId = null, sheetExId = null, timerInt = null;
   try {
@@ -82,7 +131,22 @@
     if (!state.history) state.history = [];
     if (!state.templates) state.templates = [];
     if (!state.title) state.title = 'Кросс-день';
-    state.sections.forEach((s) => s.ex.forEach((e) => { if (e.id >= _id) _id = e.id + 1; e.fields.forEach((f) => { if (f.id >= _id) _id = f.id + 1; }); }));
+    if (!state.description) state.description = '';
+    state.sections.forEach((s) => s.ex.forEach((e) => {
+      if (e.id >= _id) _id = e.id + 1;
+      if (e.skipped === undefined) e.skipped = false;
+      if (e.notes === undefined) e.notes = '';
+      if (!e.sets) e.sets = [];
+      e.fields.forEach((f) => {
+        if (f.id >= _id) _id = f.id + 1;
+      });
+      e.sets.forEach((set) => {
+        if (set.id >= _id) _id = set.id + 1;
+        set.fields.forEach((f) => {
+          if (f.id >= _id) _id = f.id + 1;
+        });
+      });
+    }));
   } catch (e) { state = DEFAULT(); }
   const save = () => { try { localStorage.setItem(LSKEY, JSON.stringify(state)); } catch (e) {} };
 
@@ -162,14 +226,33 @@
         await fetch('/api/templates/' + state.activeTemplateId, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: state.title, sections: state.sections })
+          body: JSON.stringify({ title: state.title, sections: state.sections, description: state.description })
         });
       } catch (e) { console.error('Save template failed:', e); }
+    },
+    moveExerciseUp(state, id) {
+      const sec = state.sections[state.i];
+      const idx = sec.ex.findIndex(x => x.id == id);
+      if (idx > 0) {
+        const temp = sec.ex[idx];
+        sec.ex[idx] = sec.ex[idx - 1];
+        sec.ex[idx - 1] = temp;
+      }
+    },
+    moveExerciseDown(state, id) {
+      const sec = state.sections[state.i];
+      const idx = sec.ex.findIndex(x => x.id == id);
+      if (idx !== -1 && idx < sec.ex.length - 1) {
+        const temp = sec.ex[idx];
+        sec.ex[idx] = sec.ex[idx + 1];
+        sec.ex[idx + 1] = temp;
+      }
     }
   };
   if (typeof window !== 'undefined') {
     window.__tkLogic = tkLogic;
     window.__tkState = state;
+    window.initSetsForExercise = initSetsForExercise;
   }
 
   const dispVal = (f, v) => (f.type === 'time' ? mmss(v) : fmt(v)) + (f.type !== 'time' && f.unit ? ' ' + f.unit : '');
@@ -192,20 +275,69 @@
       (unit ? '<span class="funit">' + esc(unit) + '</span>' : '') + '</div>';
   }
 
+  function setFieldHTML(ex, set, f) {
+    if (f.type === 'text') {
+      return '<span class="set-tpill" contenteditable="true" spellcheck="false" data-act="set-text" data-ex-id="' + ex.id + '" data-set-id="' + set.id + '" data-fid="' + f.id + '" data-ph="' + esc(f.ph || '—') + '">' + esc(f.value || '') + '</span>';
+    }
+    const disp = f.type === 'time' ? mmss(f.value) : fmt(f.value);
+    const unit = f.type === 'time' ? 'мин:сек' : f.unit;
+    return '<span class="set-mstep">' +
+      '<button data-act="set-dec" data-ex-id="' + ex.id + '" data-set-id="' + set.id + '" data-fid="' + f.id + '">−</button>' +
+      '<span class="v" contenteditable="true" spellcheck="false" data-act="set-val" data-ex-id="' + ex.id + '" data-set-id="' + set.id + '" data-fid="' + f.id + '">' + disp + '</span>' +
+      '<button data-act="set-inc" data-ex-id="' + ex.id + '" data-set-id="' + set.id + '" data-fid="' + f.id + '">+</button>' +
+      '</span>' + (unit ? '<span class="set-funit">' + esc(unit) + '</span>' : '');
+  }
+
+  function setRowHTML(ex, set, index) {
+    const cls = 'set-row' + (set.done ? ' done' : '') + (set.skipped ? ' skipped' : '');
+    let h = '<div class="' + cls + '" data-ex-id="' + ex.id + '" data-set-id="' + set.id + '" data-act="set-row">';
+    h += '<button class="set-check-btn" data-act="set-toggle" data-ex-id="' + ex.id + '" data-set-id="' + set.id + '">';
+    if (set.done) h += '✓';
+    else if (set.skipped) h += '✕';
+    h += '</button>';
+    h += '<span class="set-num">Сет ' + (index + 1) + '</span>';
+    h += '<div class="set-fields">' + set.fields.map(f => setFieldHTML(ex, set, f)).join('') + '</div>';
+    h += '</div>';
+    return h;
+  }
+
   function cardHTML(ex) {
     const active = state.mode === 'active';
     const editing = ex.id === editId && state.mode === 'build';
-    const cls = 'card' + (active ? ' tappable' : '') + (active && ex.done ? ' done' : '') + (editing ? ' editing' : '');
+    const cls = 'card' + (active ? ' tappable' : '') + (active && ex.done ? ' done' : '') + (active && ex.skipped ? ' skipped' : '') + (editing ? ' editing' : '');
     let h = '<div class="' + cls + '"' + (active ? ' data-act="toggle" data-id="' + ex.id + '"' : '') + '>';
     h += '<div class="card-top">';
-    if (active) h += '<span class="check">✓</span>';
+    if (active) {
+      if (ex.skipped) h += '<span class="check skipped">✕</span>';
+      else h += '<span class="check">✓</span>';
+    }
     h += '<span class="cname"' + (editing ? ' contenteditable="true" spellcheck="false" data-act="cname" data-id="' + ex.id + '"' : '') + '>' + esc(ex.name) + '</span>';
     if (state.mode === 'build') h += '<button class="kebab" data-act="menu" data-id="' + ex.id + '">⋯</button>';
     h += '</div>';
-    if (ex.fields.length) h += '<div class="fldrow">' + ex.fields.map((f) => fieldHTML(ex, f, editing)).join('') + '</div>';
+    if (editing) {
+      h += '<div class="ex-notes-edit"><textarea class="ex-notes-input" data-act="exnotes" data-id="' + ex.id + '" placeholder="Заметки по технике и особенности...">' + esc(ex.notes || '') + '</textarea></div>';
+    } else if (ex.notes) {
+      h += '<div class="ex-notes-display">📝 ' + esc(ex.notes) + '</div>';
+    }
+    if (active && ex.sets && ex.sets.length > 0) {
+      const planStr = ex.fields.map(f => {
+        if (f.key === 'подходы') return f.value + ' подх.';
+        return f.value + (f.unit ? ' ' + f.unit : '');
+      }).join(' · ');
+      h += '<div class="card-target">План: ' + esc(planStr) + '</div>';
+      h += '<div class="sets-list">' + ex.sets.map((s, idx) => setRowHTML(ex, s, idx)).join('') + '</div>';
+    } else {
+      if (ex.fields.length) h += '<div class="fldrow">' + ex.fields.map((f) => fieldHTML(ex, f, editing)).join('') + '</div>';
+    }
     if (editing) h += '<div class="cardedit"><span class="addfield" data-act="addfield" data-id="' + ex.id + '">＋ поле</span><button class="editdone" data-act="editdone" data-id="' + ex.id + '">Готово</button></div>';
     if (ex.id === menuId && state.mode === 'build') {
-      h += '<div class="kmenu"><button data-act="dup" data-id="' + ex.id + '">Дублировать</button><button data-act="edit" data-id="' + ex.id + '">Изменить</button><button class="danger" data-act="del" data-id="' + ex.id + '">Удалить</button></div>';
+      const idx = curSec().ex.indexOf(ex);
+      const isFirst = idx === 0;
+      const isLast = idx === curSec().ex.length - 1;
+      h += '<div class="kmenu">';
+      if (!isFirst) h += '<button data-act="moveup" data-id="' + ex.id + '">▲ Переместить вверх</button>';
+      if (!isLast) h += '<button data-act="movedown" data-id="' + ex.id + '">▼ Переместить вниз</button>';
+      h += '<button data-act="dup" data-id="' + ex.id + '">Дублировать</button><button data-act="edit" data-id="' + ex.id + '">Изменить</button><button class="danger" data-act="del" data-id="' + ex.id + '">Удалить</button></div>';
     }
     h += '</div>';
     return h;
@@ -214,7 +346,21 @@
   /* ---------------- summary render ---------------- */
   function summaryHTML() {
     let diffs = 0, total = 0;
-    state.sections.forEach((s) => s.ex.forEach((e) => e.fields.forEach((f) => { total++; if (isDiff(f)) diffs++; })));
+    state.sections.forEach((s) => s.ex.forEach((e) => {
+      if (e.sets && e.sets.length > 0) {
+        e.sets.forEach((set) => set.fields.forEach((f) => {
+          total++;
+          const parentField = e.fields.find(pf => pf.key === f.key);
+          const plan = (parentField && parentField.plan !== undefined) ? parentField.plan : f.value;
+          if (isDiff({ ...f, plan })) diffs++;
+        }));
+      } else {
+        e.fields.forEach((f) => {
+          total++;
+          if (isDiff(f)) diffs++;
+        });
+      }
+    }));
     let h = '<div class="summary">';
     h += '<div class="sumhead"><div class="big">Тренировка завершена</div>' +
       '<div class="sub">⏱ ' + mmss(Math.floor(state.elapsed / 1000)) + ' · ' +
@@ -222,16 +368,43 @@
     state.sections.forEach((s) => {
       h += '<table class="rtable"><tr class="sech"><td>' + esc(s.name) + '</td><td class="hd">План</td><td class="hd">Факт</td></tr>';
       s.ex.forEach((e) => {
-        h += '<tr class="exh"><td colspan="3">' + esc(e.name) + (e.done ? '' : ' <span class="skip">не отмечено</span>') + '</td></tr>';
-        e.fields.forEach((f) => {
-          const plan = f.plan === undefined ? f.value : f.plan;
-          const diff = isDiff(f);
-          let arrow = '';
-          if (diff && f.type !== 'text') arrow = Number(f.value) < Number(plan) ? ' ↓' : ' ↑';
-          else if (diff) arrow = ' ✎';
-          h += '<tr><td class="fl">' + esc(f.label) + '</td><td class="pl">' + esc(dispVal(f, plan)) + '</td>' +
-            '<td class="fa' + (diff ? ' diff' : '') + '">' + esc(dispVal(f, f.value)) + arrow + '</td></tr>';
-        });
+        let statusText = '';
+        if (e.skipped) statusText = ' <span class="skip skipped-status">пропущено</span>';
+        else if (!e.done) statusText = ' <span class="skip">не отмечено</span>';
+        
+        h += '<tr class="exh"><td colspan="3">' + esc(e.name) + statusText + '</td></tr>';
+        
+        if (e.sets && e.sets.length > 0) {
+          e.sets.forEach((set, setIdx) => {
+            let setStatus = '';
+            if (set.skipped) setStatus = ' <span class="skip skipped-status">(пропущен)</span>';
+            else if (!set.done) setStatus = ' <span class="skip">(не отмечен)</span>';
+            
+            h += '<tr class="seth-row"><td colspan="3" class="set-label-cell">Подход ' + (setIdx + 1) + setStatus + '</td></tr>';
+            
+            set.fields.forEach((f) => {
+              const parentField = e.fields.find(pf => pf.key === f.key);
+              const plan = (parentField && parentField.plan !== undefined) ? parentField.plan : f.value;
+              const diff = isDiff({ ...f, plan });
+              let arrow = '';
+              if (diff && f.type !== 'text') arrow = Number(f.value) < Number(plan) ? ' ↓' : ' ↑';
+              else if (diff) arrow = ' ✎';
+              
+              h += '<tr><td class="fl indent-fl">' + esc(f.label) + '</td><td class="pl">' + esc(dispVal(f, plan)) + '</td>' +
+                '<td class="fa' + (diff ? ' diff' : '') + '">' + esc(dispVal(f, f.value)) + arrow + '</td></tr>';
+            });
+          });
+        } else {
+          e.fields.forEach((f) => {
+            const plan = f.plan === undefined ? f.value : f.plan;
+            const diff = isDiff(f);
+            let arrow = '';
+            if (diff && f.type !== 'text') arrow = Number(f.value) < Number(plan) ? ' ↓' : ' ↑';
+            else if (diff) arrow = ' ✎';
+            h += '<tr><td class="fl">' + esc(f.label) + '</td><td class="pl">' + esc(dispVal(f, plan)) + '</td>' +
+              '<td class="fa' + (diff ? ' diff' : '') + '">' + esc(dispVal(f, f.value)) + arrow + '</td></tr>';
+          });
+        }
       });
       h += '</table>';
     });
@@ -281,6 +454,7 @@
   function render() {
     const mode = state.mode;
     const snav = $('#snav'), dots = $('#dots'), wtitle = $('#wtitle'), wpill = $('#wpill'), crumb = $('#crumb');
+    const wdesc = $('#wdesc');
 
     const backBtn = $('#backBtn') || (() => {
       const btn = document.createElement('button');
@@ -297,11 +471,18 @@
     })();
     backBtn.style.display = mode === 'build' ? '' : 'none';
 
+    if (wdesc) {
+      wdesc.textContent = state.description || '';
+      wdesc.contentEditable = mode === 'build' ? 'true' : 'false';
+      wdesc.style.display = (mode === 'active' && !state.description) ? 'none' : '';
+    }
+
     if (mode === 'home') {
       snav.style.display = 'none'; dots.style.display = 'none';
       crumb.textContent = 'Главная';
       wtitle.textContent = 'Train Keeper'; wtitle.contentEditable = 'false';
       wpill.className = 'timer draft mono'; wpill.textContent = 'архив';
+      if (wdesc) wdesc.style.display = 'none';
       exBody.innerHTML = homeHTML();
       $('#secbtn').style.display = 'none';
       save(); return;
@@ -313,6 +494,7 @@
       crumb.textContent = state.isViewingHistory ? 'История' : 'Итог';
       wtitle.textContent = state.title;
       wtitle.contentEditable = 'false'; wpill.className = 'timer mono'; wpill.textContent = '✓ готово';
+      if (wdesc) wdesc.style.display = 'none';
       exBody.innerHTML = summaryHTML();
       const btn = $('#secbtn'); btn.className = 'secbtn go'; btn.dataset.act = 'closesummary';
       btn.textContent = state.isViewingHistory ? '← Назад к истории' : 'Готово · к редактированию';
@@ -359,7 +541,12 @@
    */
   function startWorkout() {
     state.mode = 'active'; state.i = 0; state.startedAt = Date.now(); state.comment = '';
-    state.sections.forEach((s) => s.ex.forEach((e) => { e.done = false; e.fields.forEach((f) => { f.plan = f.value; }); }));
+    state.sections.forEach((s) => s.ex.forEach((e) => {
+      e.done = false;
+      e.skipped = false;
+      e.fields.forEach((f) => { f.plan = f.value; });
+      initSetsForExercise(e);
+    }));
     editId = null; menuId = null; render(); startTimer(); exBody.scrollTop = 0;
   }
   
@@ -408,14 +595,106 @@
     render(); exBody.scrollTop = 0;
   }
 
+  /* ---------------- long-press detection for skipping ---------------- */
+  let longPressTimer = null;
+  let isLongPress = false;
+  let pressX = 0, pressY = 0;
+
+  function startPress(e, element) {
+    if (state.mode !== 'active') return;
+    isLongPress = false;
+    const touch = e.touches ? e.touches[0] : e;
+    pressX = touch.clientX;
+    pressY = touch.clientY;
+    
+    longPressTimer = setTimeout(() => {
+      isLongPress = true;
+      const act = element.dataset.act;
+      const exId = element.dataset.id || element.dataset.exId;
+      const setId = element.dataset.setId;
+      
+      if (act === 'toggle' && exId) {
+        const ex = findEx(exId);
+        if (ex && (!ex.sets || ex.sets.length === 0)) {
+          ex.skipped = !ex.skipped;
+          if (ex.skipped) ex.done = false;
+          render();
+          toast(ex.skipped ? 'Упражнение пропущено' : 'Упражнение возвращено');
+        }
+      } else if ((act === 'set-row' || act === 'set-toggle') && exId && setId) {
+        const ex = findEx(exId);
+        if (ex && ex.sets) {
+          const set = ex.sets.find(s => s.id == setId);
+          if (set) {
+            set.skipped = !set.skipped;
+            if (set.skipped) set.done = false;
+            ex.done = ex.sets.every(s => s.done || s.skipped);
+            ex.skipped = ex.sets.every(s => s.skipped);
+            render();
+            toast(set.skipped ? 'Подход пропущен' : 'Подход возвращен');
+          }
+        }
+      }
+    }, 600);
+  }
+
+  function cancelPress() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  }
+
+  document.addEventListener('mousedown', (e) => {
+    const el = e.target.closest('[data-act="toggle"], [data-act="set-row"], [data-act="set-toggle"]');
+    if (el) startPress(e, el);
+  });
+
+  document.addEventListener('touchstart', (e) => {
+    const el = e.target.closest('[data-act="toggle"], [data-act="set-row"], [data-act="set-toggle"]');
+    if (el) startPress(e, el);
+  }, { passive: true });
+
+  document.addEventListener('mousemove', (e) => {
+    if (longPressTimer) {
+      const touch = e.touches ? e.touches[0] : e;
+      if (Math.abs(touch.clientX - pressX) > 10 || Math.abs(touch.clientY - pressY) > 10) {
+        cancelPress();
+      }
+    }
+  });
+
+  document.addEventListener('touchmove', (e) => {
+    if (longPressTimer) {
+      const touch = e.touches ? e.touches[0] : e;
+      if (Math.abs(touch.clientX - pressX) > 10 || Math.abs(touch.clientY - pressY) > 10) {
+        cancelPress();
+      }
+    }
+  }, { passive: true });
+
+  document.addEventListener('mouseup', cancelPress);
+  document.addEventListener('touchend', cancelPress);
+
   /* ---------------- interactions ---------------- */
   document.addEventListener('click', (e) => {
+    if (isLongPress) {
+      isLongPress = false;
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     if (menuId !== null && !e.target.closest('.kmenu') && !(e.target.closest('[data-act]') && e.target.closest('[data-act]').dataset.act === 'menu')) { menuId = null; render(); return; }
     const el = e.target.closest('[data-act]'); if (!el) return;
-    const act = el.dataset.act, id = el.dataset.id, fid = el.dataset.fid, i = el.dataset.i, tid = el.dataset.tid;
+    const act = el.dataset.act,
+          id = el.dataset.id || el.dataset.exId,
+          fid = el.dataset.fid,
+          i = el.dataset.i,
+          tid = el.dataset.tid,
+          setId = el.dataset.setId;
     const ex = id ? findEx(id) : null;
     switch (act) {
-      case 'val': case 'text': case 'label': case 'cname': case 'secname': case 'comment': return;
+      case 'val': case 'text': case 'label': case 'cname': case 'secname': case 'comment': case 'exnotes': return;
       case 'back': {
         if (state.mode !== 'build') return;
         save();
@@ -435,6 +714,7 @@
         if (t) {
           state.activeTemplateId = t.id;
           state.title = t.title;
+          state.description = t.description || '';
           state.sections = t.sections.length ? JSON.parse(JSON.stringify(t.sections)) : [
             { name: 'Новая секция', ex: [mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)])] }
           ];
@@ -451,8 +731,70 @@
         state.title = h.title; state.elapsed = h.elapsed; state.comment = h.comment; state.sections = h.sections;
         render(); return;
       }
-      case 'toggle': if (state.mode === 'active' && ex) { ex.done = !ex.done; render(); } return;
-      case 'inc': case 'dec': { const f = findField(ex, fid); const d = act === 'inc' ? f.step : -f.step; f.value = Math.max(0, Math.round((Number(f.value) + d) * 100) / 100); render(); tkLogic.saveTemplate(state); return; }
+      case 'toggle':
+        if (state.mode === 'active' && ex) {
+          if (!ex.sets || ex.sets.length === 0) {
+            ex.done = !ex.done;
+            if (ex.done) ex.skipped = false;
+            render();
+          }
+        }
+        return;
+      case 'set-toggle':
+      case 'set-row':
+        if (state.mode === 'active' && ex && setId) {
+          const set = ex.sets.find(s => s.id == setId);
+          if (set) {
+            set.done = !set.done;
+            if (set.done) set.skipped = false;
+            ex.done = ex.sets.every(s => s.done || s.skipped);
+            ex.skipped = ex.sets.every(s => s.skipped);
+            render();
+          }
+        }
+        return;
+      case 'set-inc':
+      case 'set-dec':
+        if (ex && setId && fid) {
+          const set = ex.sets.find(s => s.id == setId);
+          if (set) {
+            const f = set.fields.find(x => x.id == fid);
+            if (f) {
+              const d = act === 'set-inc' ? f.step : -f.step;
+              f.value = Math.max(0, Math.round((Number(f.value) + d) * 100) / 100);
+              render();
+              tkLogic.saveTemplate(state);
+            }
+          }
+        }
+        return;
+      case 'moveup':
+        if (state.mode === 'build' && ex) {
+          tkLogic.moveExerciseUp(state, ex.id);
+          menuId = null;
+          render();
+          tkLogic.saveTemplate(state);
+        }
+        return;
+      case 'movedown':
+        if (state.mode === 'build' && ex) {
+          tkLogic.moveExerciseDown(state, ex.id);
+          menuId = null;
+          render();
+          tkLogic.saveTemplate(state);
+        }
+        return;
+      case 'inc': case 'dec': {
+        const f = findField(ex, fid);
+        const d = act === 'inc' ? f.step : -f.step;
+        f.value = Math.max(0, Math.round((Number(f.value) + d) * 100) / 100);
+        if (f.key === 'подходы') {
+          initSetsForExercise(ex);
+        }
+        render();
+        tkLogic.saveTemplate(state);
+        return;
+      }
       case 'rmfield': ex.fields = ex.fields.filter((f) => f.id != fid); render(); tkLogic.saveTemplate(state); return;
       case 'addfield': sheetExId = ex.id; openSheet(); return;
       case 'menu': menuId = (menuId === ex.id ? null : ex.id); render(); return;
@@ -482,7 +824,7 @@
       case 'closesummary': closeSummary(); return;
       case 'nextsec': {
         if (state.mode !== 'active') return;
-        const sec = curSec(); if (!sec.ex.length || !sec.ex.every((x) => x.done)) return;
+        const sec = curSec(); if (!sec.ex.length || !sec.ex.every((x) => x.done || x.skipped)) return;
         if (state.i < state.sections.length - 1) { state.i++; render(); exBody.scrollTop = 0; }
         else finishWorkout();
         return;
@@ -496,22 +838,51 @@
   exBody.addEventListener('input', (e) => {
     const el = e.target.closest('[data-act]'); if (!el) return;
     if (el.dataset.act === 'comment') { state.comment = el.value; save(); return; }
-    const ex = el.dataset.id ? findEx(el.dataset.id) : null;
+    if (el.dataset.act === 'exnotes') {
+      const ex = findEx(el.dataset.id);
+      if (ex) { ex.notes = el.value; tkLogic.saveTemplate(state); }
+      return;
+    }
+    const exId = el.dataset.id || el.dataset.exId;
+    const ex = exId ? findEx(exId) : null;
     if (el.dataset.act === 'cname' && ex) { ex.name = el.textContent; tkLogic.saveTemplate(state); }
     else if (el.dataset.act === 'label' && ex) { const f = findField(ex, el.dataset.fid); if (f) { f.label = el.textContent; tkLogic.saveTemplate(state); } }
   });
   exBody.addEventListener('focusout', (e) => {
-    const el = e.target.closest('[data-act]'); if (!el || el.dataset.act === 'comment') { save(); return; }
-    const ex = el.dataset.id ? findEx(el.dataset.id) : null; if (!ex) return;
-    const f = el.dataset.fid ? findField(ex, el.dataset.fid) : null;
-    if (el.dataset.act === 'val' && f) { f.value = f.type === 'time' ? parseTime(el.textContent) : Math.max(0, parseFloat(el.textContent) || 0); render(); tkLogic.saveTemplate(state); }
-    else if (el.dataset.act === 'text' && f) { f.value = el.textContent.trim(); save(); tkLogic.saveTemplate(state); }
+    const el = e.target.closest('[data-act]'); if (!el || el.dataset.act === 'comment' || el.dataset.act === 'exnotes') { save(); return; }
+    const exId = el.dataset.id || el.dataset.exId;
+    const ex = exId ? findEx(exId) : null; if (!ex) return;
+    let f = null;
+    if (el.dataset.fid) {
+      if (ex.sets && el.dataset.setId) {
+        const set = ex.sets.find(s => s.id == el.dataset.setId);
+        if (set) {
+          f = set.fields.find(x => x.id == el.dataset.fid);
+        }
+      } else {
+        f = findField(ex, el.dataset.fid);
+      }
+    }
+    if ((el.dataset.act === 'val' || el.dataset.act === 'set-val') && f) {
+      f.value = f.type === 'time' ? parseTime(el.textContent) : Math.max(0, parseFloat(el.textContent) || 0);
+      if (f.key === 'подходы') {
+        initSetsForExercise(ex);
+      }
+      render(); tkLogic.saveTemplate(state);
+    }
+    else if ((el.dataset.act === 'text' || el.dataset.act === 'set-text') && f) {
+      f.value = el.textContent.trim();
+      save(); tkLogic.saveTemplate(state);
+    }
     else { save(); tkLogic.saveTemplate(state); }
   });
 
   $('#sname').addEventListener('input', () => { if (state.mode === 'build') { curSec().name = $('#sname').textContent; tkLogic.saveTemplate(state); } });
   $('#sname').addEventListener('focusout', save);
   $('#wtitle').addEventListener('input', () => { if (state.mode === 'build') { state.title = $('#wtitle').textContent; tkLogic.saveTemplate(state); } });
+  $('#wtitle').addEventListener('focusout', save);
+  $('#wdesc').addEventListener('input', () => { if (state.mode === 'build') { state.description = $('#wdesc').textContent; tkLogic.saveTemplate(state); } });
+  $('#wdesc').addEventListener('focusout', save);
 
   /* ---------------- add-field sheet ---------------- */
   const sheet = $('#sheet'), scrim = $('#scrim'), tchips = $('#tchips');
