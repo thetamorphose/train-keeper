@@ -10,6 +10,7 @@ A reusable blueprint for a workout (Workout List). Stored in the `templates` col
 | :--- | :--- | :--- |
 | `id` | `string (uuid)` | Unique identifier. |
 | `title` | `string` | Name of the template (e.g., "Leg Day"). |
+| `description` | `string` | Notes/technique tips for the workout template. |
 | `sections` | `Array<Section>` | Blueprint of sections and exercises. |
 | `createdAt` | `number (timestamp)` | Creation time. |
 
@@ -21,10 +22,12 @@ The root entity representing a single training session.
 | `id` | `string (uuid)` | Unique identifier. |
 | `listId` | `string (uuid)` | ID of the Workout List it belongs to (optional). |
 | `title` | `string` | User-defined name of the workout. |
+| `description` | `string` | Description or technique tips inherited from template. |
 | `date` | `number (timestamp)` | When the workout was completed (only in history). |
 | `startedAt` | `number (timestamp)` | When the workout was started. |
 | `elapsed` | `number (ms)` | Total duration of the workout. |
 | `comment` | `string` | User notes about the session. |
+| `wellBeingRating` | `string` | Post-workout well-being quick choice rating (e.g. "strong", "exhausted"). |
 | `sections` | `Array<Section>` | List of exercise groupings. |
 
 ## 3. Section Object
@@ -44,7 +47,9 @@ A specific activity within a section.
 | `id` | `string (uuid)` | Unique identifier. |
 | `name` | `string` | Name of the exercise. |
 | `done` | `boolean` | Completion status. |
+| `skipped` | `boolean` | True if the exercise was skipped ("not done"). |
 | `fields` | `Array<Field>` | Dynamic metrics associated with the exercise. |
+| `progression` | `Object` | Progression rule (field key, increment step, N frequency, counter). |
 
 ## 5. Field Object
 A specific metric for an exercise (e.g., Weight, Time).
@@ -60,7 +65,18 @@ A specific metric for an exercise (e.g., Weight, Time).
 | `unit` | `string` | Unit of measurement (e.g., "kg"). |
 | `step` | `number` | Increment/decrement step for `num` types. |
 
+## 6. Habit Object
+A habit tracking checklist item. Stored in the `habits` collection.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `string (uuid)` | Unique identifier. |
+| `title` | `string` | Habit name (e.g., "Drink 2L water"). |
+| `completedDates` | `Array<string>` | List of dates completed (formatted as "YYYY-MM-DD"). |
+| `createdAt` | `number` | Timestamp of creation. |
+
 ## Data Integrity Rules
 - **No Nulls:** Prefer empty strings `""` or `0` over `null`.
 - **Unique IDs:** Use UUIDs for all IDs to prevent collisions when merging history.
 - **Timestamps:** Always use Unix timestamps in milliseconds.
+

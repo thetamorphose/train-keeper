@@ -25,3 +25,31 @@
 2. **Selection:** User chooses from presets (Weight, Reps, Time, etc.) or "Custom".
 3. **Configuration:** If "Custom", user enters Label and Unit.
 4. **Integration:** New field appears on the card immediately for data entry.
+
+## Flow 4: Workout Preparation Navigation
+1. **Initiate:** User selects a Workout/Template from the list to prepare for the session.
+2. **Review/Edit:** User reviews the sections and exercises in preparation mode.
+3. **Cancel/Go Back:** User decides not to start the workout and taps the "Back" button.
+    - *Result:* App returns user to the main Workout List view without creating an active workout session.
+
+## Flow 5: Smart Progression and Plan Adjustment
+1. **Actual vs. Plan Entry:** During active workout, user enters an actual (fact) value for a field (e.g., Weight).
+2. **Exceeding Plan:** If the entered fact value is higher than the planned value:
+    - *Logic:* The planned value is automatically updated to match this higher fact value (ensures plan catches up to actual capabilities).
+    - *Constraint:* If the fact is lower than the planned value, the plan is NOT changed (remains as the target).
+3. **Periodic Auto-Progression:**
+    - *Configuration:* For each exercise, the user specifies a progression rule (e.g., "Increase weight by 2.5 kg every 3 workouts").
+    - *Trigger:* When completing the Nth workout containing this exercise, the app automatically increments the planned values for the next workout template based on the rule.
+
+## Flow 6: Habit Tracking (Checklist Mode)
+1. **Habits View:** User opens the Habit Checklist tab/screen.
+2. **Checklist:** User sees a list of daily habits (e.g., "Drink water", "Stretch").
+3. **No Active Session:** User checkmarks completed habits directly on the list without starting a training session or timer.
+4. **History:** Completion status is stored with a date timestamp for habit streak tracking.
+
+## Flow 7: Post-Workout Well-Being Selection
+1. **Completion:** User completes a workout and triggers the "Finish Workout" screen.
+2. **Well-Being Screen:** App displays the post-workout self-rating / feedback form.
+3. **Quick Selection:** User taps a predefined mood or intensity preset (e.g., "Feeling Strong", "Exhausted", "Smooth Session") instead of having to write text.
+4. **Optional Note:** A text input remains available for special or detailed comments only.
+
