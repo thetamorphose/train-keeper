@@ -67,7 +67,7 @@
   const DEFAULT = () => ({
     mode: 'home', history: [], templates: [], activeTemplateId: null, title: 'Кросс-день', description: '',
     type: 'workout',
-    i: 0, comment: '', startedAt: 0, elapsed: 0,
+    i: 0, comment: '', startedAt: 0, elapsed: 0, wellBeingRating: 0,
     sections: [
       { name: 'Разминка', ex: [
         mkEx('Беговая дорожка', [mkField(tpl('время'), 300)]),
@@ -134,6 +134,7 @@
     if (!state.title) state.title = 'Кросс-день';
     if (!state.description) state.description = '';
     if (!state.type) state.type = 'workout';
+    if (state.wellBeingRating === undefined) state.wellBeingRating = 0;
     state.sections.forEach((s) => s.ex.forEach((e) => {
       if (e.id >= _id) _id = e.id + 1;
       if (e.skipped === undefined) e.skipped = false;
@@ -421,6 +422,19 @@
       });
       h += '</table>';
     });
+    h += '<div class="wellbeing-box"><div class="clab">Самочувствие</div>' +
+      '<div class="wb-rating' + (state.isViewingHistory ? ' readonly' : '') + '">';
+    const emojis = { 1: '😞', 2: '😐', 3: '🙂', 4: '😃', 5: '🤩' };
+    for (let rating = 1; rating <= 5; rating++) {
+      const activeClass = state.wellBeingRating === rating ? ' active' : '';
+      const disabledAttr = state.isViewingHistory ? ' disabled' : '';
+      h += '<button class="wb-btn' + activeClass + '" data-act="rate-wellbeing" data-val="' + rating + '"' + disabledAttr + '>' +
+        '<span class="wb-emoji">' + emojis[rating] + '</span>' +
+        '<span class="wb-num">' + rating + '</span>' +
+        '</button>';
+    }
+    h += '</div></div>';
+
     h += '<div class="commentbox"><div class="clab">Комментарий к тренировке</div>' +
       '<textarea class="comment" data-act="comment" placeholder="Как прошло? Самочувствие, заметки…">' + esc(state.comment || '') + '</textarea></div>';
     h += '<div class="legend-diff"><span class="sw"></span> — значение отличается от запланированного</div>';
@@ -457,7 +471,9 @@
       h += '<div class="h-empty">История пока пуста.</div>';
     } else {
       h += '<div class="h-list">' + state.history.map((h, idx) => {
-        const stats = h.type === 'habit' ? 'привычки' : '⏱ ' + mmss(Math.floor(h.elapsed / 1000));
+        const ratingVal = h.wellBeingRating;
+        const ratingStars = ratingVal ? ' · ⭐ ' + ratingVal + '/5' : '';
+        const stats = (h.type === 'habit' ? 'привычки' : '⏱ ' + mmss(Math.floor(h.elapsed / 1000))) + ratingStars;
         return '<div class="h-item" data-act="viewhistory" data-i="' + idx + '">' +
           '<div class="h-top"><span class="h-title">' + esc(h.title || 'Тренировка') + '</span><span class="h-date">' + new Date(h.date).toLocaleDateString() + '</span></div>' +
           '<div class="h-stats">' + stats + '</div>' +
@@ -590,7 +606,7 @@
    * Transition from 'build' to 'active' mode
    */
   function startWorkout() {
-    state.mode = 'active'; state.i = 0; state.startedAt = Date.now(); state.comment = '';
+    state.mode = 'active'; state.i = 0; state.startedAt = Date.now(); state.comment = ''; state.wellBeingRating = 0;
     state.sections.forEach((s) => s.ex.forEach((e) => {
       e.done = false;
       e.skipped = false;
@@ -629,6 +645,7 @@
       date: Date.now(),
       elapsed: state.elapsed,
       comment: state.comment,
+      wellBeingRating: state.wellBeingRating || 0,
       sections: JSON.parse(JSON.stringify(state.sections))
     };
 
@@ -642,6 +659,7 @@
     state.mode = 'home';
     state.i = 0;
     state.comment = '';
+    state.wellBeingRating = 0;
     state.sections.forEach((s) => s.ex.forEach((e) => { 
       e.done = false; 
       e.skipped = false;
@@ -803,7 +821,7 @@
         const h = state.history[i];
         localStorage.setItem(LSKEY + '_draft', JSON.stringify(state));
         state.isViewingHistory = true; state.mode = 'summary';
-        state.title = h.title; state.elapsed = h.elapsed; state.comment = h.comment; state.sections = h.sections;
+        state.title = h.title; state.elapsed = h.elapsed; state.comment = h.comment; state.wellBeingRating = h.wellBeingRating || 0; state.sections = h.sections;
         render(); return;
       }
       case 'toggle':
@@ -905,6 +923,13 @@
       }
       case 'startworkout': startWorkout(); return;
       case 'closesummary': closeSummary(); return;
+      case 'rate-wellbeing': {
+        if (state.isViewingHistory) return;
+        state.wellBeingRating = Number(el.dataset.val);
+        render();
+        save();
+        return;
+      }
       case 'resethabits': {
         state.sections.forEach((s) => s.ex.forEach((e) => {
           e.done = false;

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- 5-Point Well-being Rating Scale:
+  - Adds a visual, premium 5-point well-being rating scale on the workout and habit checklist completion (summary) screens.
+  - Uses modern, glassmorphic buttons with emojis representing different levels: 1 (😞), 2 (😐), 3 (🙂), 4 (😃), 5 (🤩).
+  - Persists selected well-being ratings (`wellBeingRating`) to local storage and the database history via `POST /api/history`.
+  - Displays the star rating (e.g., `⭐ 4/5`) next to the duration or checklist badge in the home screen history log.
+  - Restores well-being ratings when viewing past history items in a read-only (disabled) mode.
+  - Fully covered by automated tests in `__tests__/wellbeing.test.js`.
 - Habit Tracking checklist functionality:
   - Supports creating "habit lists" distinct from workout templates.
   - Merges Build and Focus/Active modes, allowing habits to be checked/skipped directly in build mode without starting a workout session.

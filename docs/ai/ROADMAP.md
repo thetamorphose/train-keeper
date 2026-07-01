@@ -26,7 +26,7 @@ Focus on the core "Focus Mode" workout experience with section-based navigation 
 - [x] Section Management (Add/Delete sections within a workout)
 - [x] Navigation back from Workout Preparation screen to Workout List
 - [x] Skip Exercise/Sets option ("Not Done" / "Skipped" status instead of decrementing reps to 0)
-- [ ] Post-workout well-being quick options (multi-choice options instead of text-only)
+- [x] Post-workout well-being quick options (multi-choice options instead of text-only)
 
 ### Workout Organization
 - [x] Workout Lists/Groups (Create, delete, and organize workouts into folders/lists)

@@ -496,4 +496,87 @@ body:not(.clean) .h-badge {
   box-shadow: 2px 3px 0 rgba(43, 42, 40, .16);
 }
 
+/* ---------------- wellbeing rating component ---------------- */
+.wellbeing-box {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wellbeing-box .clab {
+  font-size: 13px;
+  color: var(--muted);
+}
+.wb-rating {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.wb-btn {
+  flex: 1;
+  height: 48px;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--card);
+  font-family: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: var(--ink);
+  box-shadow: 2px 3px 0 rgba(43,42,40,.08);
+}
+body:not(.clean) .wb-btn {
+  border-radius: 14px 10px 13px 9px/9px 13px 10px 14px;
+}
+.wb-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 2px 0 rgba(43,42,40,.08);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.wb-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 2px 5px 8px rgba(17, 153, 138, 0.25);
+}
+.wb-emoji {
+  font-size: 20px;
+  line-height: 1.1;
+  transition: transform 0.2s ease;
+}
+.wb-btn.active .wb-emoji {
+  transform: scale(1.2);
+}
+.wb-num {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  margin-top: 1px;
+  color: var(--muted);
+}
+.wb-btn.active .wb-num {
+  color: rgba(255, 255, 255, 0.85);
+}
+.wb-rating.readonly {
+  opacity: 0.9;
+}
+.wb-rating.readonly .wb-btn {
+  cursor: default;
+  pointer-events: none;
+  box-shadow: none;
+  transform: none;
+}
+.wb-rating.readonly .wb-btn:not(.active) {
+  border-color: var(--line);
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+
 

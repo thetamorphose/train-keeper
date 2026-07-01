@@ -48,8 +48,8 @@
 4. **History:** Completion status is stored with a date timestamp for habit streak tracking.
 
 ## Flow 7: Post-Workout Well-Being Selection
-1. **Completion:** User completes a workout and triggers the "Finish Workout" screen.
+1. **Completion:** User completes a workout or habit checklist and triggers the "Finish Workout" (summary) screen.
 2. **Well-Being Screen:** App displays the post-workout self-rating / feedback form.
-3. **Quick Selection:** User taps a predefined mood or intensity preset (e.g., "Feeling Strong", "Exhausted", "Smooth Session") instead of having to write text.
-4. **Optional Note:** A text input remains available for special or detailed comments only.
+3. **Rating Scale:** User taps a well-being rating option from 1 (Poor/😞) to 5 (Excellent/🤩). The selected rating is visually highlighted and saved to state.
+4. **Optional Note:** A text input is available for special or detailed comments.
 

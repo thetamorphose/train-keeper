@@ -29,7 +29,7 @@ The root entity representing a single training session.
 | `startedAt` | `number (timestamp)` | When the workout was started. |
 | `elapsed` | `number (ms)` | Total duration of the workout. |
 | `comment` | `string` | User notes about the session. |
-| `wellBeingRating` | `string` | Post-workout well-being quick choice rating (e.g. "strong", "exhausted"). |
+| `wellBeingRating` | `number` | Post-workout well-being rating (1 to 5, where 1 is Poor/😞 and 5 is Excellent/🤩; 0 if unrated). |
 | `sections` | `Array<Section>` | List of exercise groupings. |
 
 ## 3. Section Object
