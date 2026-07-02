@@ -1,0 +1,8 @@
+#!/bin/sh
+# Git post-checkout hook to automatically sync/pull changes on branch switch.
+#
+# $3 is 1 if it's a branch checkout, 0 if it's a file checkout.
+if [ "$3" -eq 1 ]; then
+    echo "🔄 [Git Hook] Branch changed. Syncing local version with remote (git pull)..."
+    git pull
+fi
