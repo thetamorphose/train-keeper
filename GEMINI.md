@@ -15,7 +15,7 @@ Follow these visual guidelines for all UI generation:
 - **Typography:** Large, clear headers. Sans-serif (Inter/Geist).
 
 ## 🧠 Business Logic & Constraints
-- **NO "SETS" (Подходы):** Crucial rule. Unlike standard fitness apps, Train Keeper does NOT use the concept of sets. 
+- **OPTIONAL "SETS" (Подходы) AS SUBTASKS:** Unlike standard fitness apps, Train Keeper supports sets as subtasks under the parent exercise card. If the "подходы" field is added to an exercise, it dynamically generates checkable subtasks. If absent, the exercise functions as a single task. 
 - **Hierarchy:** Workout -> Sections -> Exercises.
 - **Focus UI:** Exercises are organized into sections. Users swipe or tap `< >` to navigate between sections.
 - **Completion Logic:** Tapping an exercise marks it as done. When all exercises in a section are done, the navigation button switches to "Next Section".

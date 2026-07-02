@@ -10,6 +10,8 @@ A reusable blueprint for a workout (Workout List). Stored in the `templates` col
 | :--- | :--- | :--- |
 | `id` | `string (uuid)` | Unique identifier. |
 | `title` | `string` | Name of the template (e.g., "Leg Day"). |
+| `type` | `string` | Type of template list: `'workout'` (default) or `'habit'`. |
+| `description` | `string` | Notes/technique tips for the workout template. |
 | `sections` | `Array<Section>` | Blueprint of sections and exercises. |
 | `createdAt` | `number (timestamp)` | Creation time. |
 
@@ -21,10 +23,13 @@ The root entity representing a single training session.
 | `id` | `string (uuid)` | Unique identifier. |
 | `listId` | `string (uuid)` | ID of the Workout List it belongs to (optional). |
 | `title` | `string` | User-defined name of the workout. |
+| `type` | `string` | Type of list: `'workout'` (default) or `'habit'`. |
+| `description` | `string` | Description or technique tips inherited from template. |
 | `date` | `number (timestamp)` | When the workout was completed (only in history). |
 | `startedAt` | `number (timestamp)` | When the workout was started. |
 | `elapsed` | `number (ms)` | Total duration of the workout. |
 | `comment` | `string` | User notes about the session. |
+| `wellBeingRating` | `number` | Post-workout well-being rating (1 to 5, where 1 is Poor/😞 and 5 is Excellent/🤩; 0 if unrated). |
 | `sections` | `Array<Section>` | List of exercise groupings. |
 
 ## 3. Section Object
@@ -43,8 +48,12 @@ A specific activity within a section.
 | :--- | :--- | :--- |
 | `id` | `string (uuid)` | Unique identifier. |
 | `name` | `string` | Name of the exercise. |
-| `done` | `boolean` | Completion status. |
-| `fields` | `Array<Field>` | Dynamic metrics associated with the exercise. |
+| `done` | `boolean` | Completion status (computed from sets if sets are present). |
+| `skipped` | `boolean` | True if the exercise was skipped ("not done"). |
+| `notes` | `string` | Notes or technique tips for the exercise. |
+| `fields` | `Array<Field>` | Dynamic metrics associated with the exercise (e.g. Weight, Reps, Sets/Подходы). |
+| `sets` | `Array<Set>` | List of set subtasks if "Подходы" field is present. |
+| `progression` | `Object` | Progression rule (field key, increment step, N frequency, counter). |
 
 ## 5. Field Object
 A specific metric for an exercise (e.g., Weight, Time).
@@ -52,7 +61,7 @@ A specific metric for an exercise (e.g., Weight, Time).
 | Field | Type | Description |
 | :--- | :--- | :--- |
 | `id` | `string (uuid)` | Unique identifier. |
-| `key` | `string` | Template key (e.g., "вес", "custom"). |
+| `key` | `string` | Template key (e.g., "вес", "повторения", "подходы", "custom"). |
 | `label` | `string` | Display label (e.g., "Weight"). |
 | `type` | `enum` | One of: `num`, `time`, `text`. |
 | `value` | `any` | The actual recorded value (number or string). |
@@ -60,7 +69,28 @@ A specific metric for an exercise (e.g., Weight, Time).
 | `unit` | `string` | Unit of measurement (e.g., "kg"). |
 | `step` | `number` | Increment/decrement step for `num` types. |
 
+## 6. Set Object
+A subtask of an exercise representing a single set/approach ("подход").
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `string (uuid)` | Unique identifier. |
+| `done` | `boolean` | Completion status of this set. |
+| `skipped` | `boolean` | True if this specific set was skipped. |
+| `fields` | `Array<Field>` | Fields inherited from the parent exercise card (excluding 'подходы'). |
+
+## 7. Habit Object
+A habit tracking checklist item. Stored in the `habits` collection.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `string (uuid)` | Unique identifier. |
+| `title` | `string` | Habit name (e.g., "Drink 2L water"). |
+| `completedDates` | `Array<string>` | List of dates completed (formatted as "YYYY-MM-DD"). |
+| `createdAt` | `number` | Timestamp of creation. |
+
 ## Data Integrity Rules
 - **No Nulls:** Prefer empty strings `""` or `0` over `null`.
 - **Unique IDs:** Use UUIDs for all IDs to prevent collisions when merging history.
 - **Timestamps:** Always use Unix timestamps in milliseconds.
+

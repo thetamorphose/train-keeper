@@ -55,9 +55,24 @@ describe('Templates API', () => {
     expect(res.status).toBe(201);
     expect(res.body.id).toBeDefined();
     expect(res.body.title).toBe('New Workout List');
+    expect(res.body.type).toBe('workout'); // default type
   });
 
-  test('PUT /api/templates/:id should update a template', async () => {
+  test('POST /api/templates with type habit should create a habit template', async () => {
+    const newTemplate = {
+      title: 'My Habits',
+      type: 'habit',
+      sections: []
+    };
+    const res = await request(app)
+      .post('/api/templates')
+      .send(newTemplate);
+    
+    expect(res.status).toBe(201);
+    expect(res.body.type).toBe('habit');
+  });
+
+  test('PUT /api/templates/:id should update a template and support updating type', async () => {
     // Create one first
     const createRes = await request(app)
       .post('/api/templates')
@@ -66,10 +81,11 @@ describe('Templates API', () => {
 
     const updateRes = await request(app)
       .put(`/api/templates/${id}`)
-      .send({ title: 'Updated Title', sections: [] });
+      .send({ title: 'Updated Title', type: 'habit', sections: [] });
     
     expect(updateRes.status).toBe(200);
     expect(updateRes.body.title).toBe('Updated Title');
+    expect(updateRes.body.type).toBe('habit');
   });
 
   test('DELETE /api/templates/:id should delete a template', async () => {

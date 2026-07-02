@@ -18,14 +18,17 @@
     <p>Создай → проведи → посмотри итог. Режим переключается кнопкой внизу.</p>
   </header>
 
-  <div class="phone"><div class="screen" id="screen">
-    <div class="notch"><span>10:09</span><span class="pill"></span><span class="mono">85</span></div>
+  <div class="screen" id="screen">
 
     <div class="wtop">
+      <button class="back-btn" data-act="back" id="backBtn" style="display: none;">← Назад</button>
       <div class="crumb" id="crumb">Создание тренировки</div>
       <div class="trow">
         <span class="wtitle" id="wtitle" contenteditable="true" spellcheck="false">Кросс-день</span>
         <span class="timer draft mono" id="wpill">черновик</span>
+      </div>
+      <div class="wdesc-row" id="wdescRow">
+        <div class="wdesc" id="wdesc" contenteditable="true" spellcheck="false" data-placeholder="Описание тренировки и нюансы..."></div>
       </div>
     </div>
 
@@ -67,7 +70,7 @@
     </div>
 
     <div class="toast" id="toast"></div>
-  </div></div>
+  </div>
 
   <p class="foot"><b>Создание:</b> секции, упражнения и ожидаемые значения (меню ⋯ — дублировать/изменить). <b>«Начать»</b> → активная тренировка: тап по карточке отмечает выполнение, значения правятся. На финише — таблица Результатов с подсветкой отклонений от плана и комментарий.</p>
 </div>

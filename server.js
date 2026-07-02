@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+import { existsSync } from 'fs';
 import { JSONFilePreset } from 'lowdb/node';
 import os from 'os';
 
@@ -11,9 +12,10 @@ const PORT = 3000;
 
 // Environment-based database selection
 const env = process.env.NODE_ENV || 'production';
+const DATA_DIR = existsSync('/data') ? '/data' : '.';
 const DB_FILE = env === 'test' 
   ? 'history.test.json' 
-  : (env === 'development' ? 'history.dev.json' : 'history.json');
+  : (env === 'development' ? 'history.dev.json' : path.join(DATA_DIR, 'history.json'));
 
 /**
  * Initialize lowdb for history persistence
@@ -72,6 +74,7 @@ app.post('/api/templates', async (req, res) => {
   const template = {
     id: crypto.randomUUID(),
     title: req.body.title || 'Новый список',
+    type: req.body.type || 'workout',
     sections: req.body.sections || [],
     createdAt: Date.now()
   };

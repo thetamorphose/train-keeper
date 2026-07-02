@@ -20,11 +20,40 @@ body{
 .head h1{font-size:27px;margin:0 0 4px;}
 .head p{font-size:14.5px;color:#5b564d;margin:0;line-height:1.4;}
 
-/* phone */
-.phone{width:320px;height:660px;border:3px solid var(--ink);border-radius:40px;background:var(--card);padding:9px;position:relative;box-shadow:8px 11px 0 rgba(43,42,40,.10);}
-.screen{width:100%;height:100%;border-radius:32px;overflow:hidden;background:var(--card);display:flex;flex-direction:column;position:relative;border:1.5px solid var(--line);}
-.notch{height:24px;display:flex;align-items:center;justify-content:space-between;padding:5px 20px 0;font-size:11px;color:var(--muted);flex:0 0 auto;}
-.notch .pill{position:absolute;left:50%;top:8px;transform:translateX(-50%);width:66px;height:16px;border-radius:10px;background:var(--ink);opacity:.85;}
+/* screen container styled as card on desktop */
+.screen {
+  width: 100%;
+  max-width: 540px;
+  height: 85vh;
+  min-height: 600px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 2.5px solid var(--ink);
+  box-shadow: 8px 11px 0 rgba(43,42,40,.10);
+}
+
+/* media query for mobile viewports to take up full width and height */
+@media (max-width: 576px) {
+  .stage {
+    padding: 0;
+    gap: 0;
+  }
+  .head, .foot {
+    display: none;
+  }
+  .screen {
+    max-width: 100%;
+    height: 100vh;
+    min-height: 100vh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+}
 
 .wtop{flex:0 0 auto;padding:9px 18px 9px;border-bottom:2px dashed var(--line);}
 .wtop .crumb{font-size:12px;color:var(--muted);}
@@ -190,3 +219,393 @@ body:not(.clean) .h-item{border-radius:19px 13px 17px 12px/12px 17px 13px 19px;}
 .h-date{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
 .h-stats{font-size:13px;color:var(--muted);font-family:'Space Mono',monospace;}
 .h-actions{margin-top:8px;}
+
+/* back button */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 2.2px solid var(--ink);
+  background: rgba(251, 250, 246, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 16px;
+  padding: 4px 12px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  box-shadow: 2px 2px 0 rgba(43,42,40,.12);
+  transition: transform .1s, box-shadow .1s, background-color .15s;
+}
+.back-btn:hover {
+  background: rgba(17, 153, 138, 0.1);
+}
+.back-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 rgba(43,42,40,.12);
+  background: rgba(17, 153, 138, 0.18);
+}
+body:not(.clean) .back-btn {
+  border-radius: 18px 12px 16px 11px/11px 16px 12px 18px;
+}
+
+/* ---------------- wdesc & wdesc-row ---------------- */
+.wdesc-row {
+  margin-top: 5px;
+  width: 100%;
+}
+.wdesc {
+  font-size: 13.5px;
+  color: var(--muted);
+  outline: none;
+  border-radius: 6px;
+  min-height: 20px;
+  line-height: 1.35;
+  padding: 2px 4px;
+}
+.wdesc:focus {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.wdesc:empty:before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  opacity: 0.65;
+}
+
+/* ---------------- ex-notes ---------------- */
+.ex-notes-edit {
+  margin-top: 6px;
+  width: 100%;
+}
+.ex-notes-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  border: 2px dashed var(--line);
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: transparent;
+  color: var(--ink);
+  outline: none;
+  resize: none;
+  line-height: 1.35;
+}
+.ex-notes-input:focus {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.ex-notes-display {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 4px;
+  padding-left: 2px;
+  line-height: 1.3;
+}
+
+/* ---------------- sets-list & set-row ---------------- */
+.sets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+}
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: 8px 10px;
+  transition: background 0.15s, border-color 0.15s;
+  cursor: pointer;
+}
+body:not(.clean) .set-row {
+  border-radius: 14px 10px 12px 9px/9px 12px 10px 14px;
+}
+.set-row.done {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-color: var(--accent);
+}
+.set-row.skipped {
+  background: color-mix(in srgb, var(--coral) 8%, transparent);
+  border-color: var(--coral);
+  opacity: 0.65;
+}
+.set-check-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--card);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: bold;
+  color: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+  padding: 0;
+}
+.set-row.done .set-check-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.set-row.skipped .set-check-btn {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: #fff;
+}
+.set-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 44px;
+}
+.set-row.done .set-num {
+  color: var(--accent-ink);
+}
+.set-row.skipped .set-num {
+  color: var(--coral);
+  text-decoration: line-through;
+}
+.set-fields {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+.set-mstep {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--card);
+}
+.set-mstep button {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  width: 20px;
+  height: 24px;
+  cursor: pointer;
+  color: var(--ink);
+  padding: 0;
+  line-height: 1;
+}
+.set-mstep button:active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.set-mstep .v {
+  min-width: 28px;
+  text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 16px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-left: 1.5px solid var(--line);
+  border-right: 1.5px solid var(--line);
+  outline: none;
+  padding: 0 2px;
+}
+.set-mstep .v:focus {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.set-funit {
+  font-size: 10px;
+  color: var(--muted);
+  margin-left: -4px;
+  margin-right: 4px;
+}
+.set-tpill {
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 2px 6px;
+  font-size: 14px;
+  outline: none;
+  min-width: 30px;
+}
+.set-tpill:focus {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.set-tpill:empty:before {
+  content: attr(data-ph);
+  color: var(--muted);
+}
+
+/* ---------------- target plan ---------------- */
+.card-target {
+  font-size: 13px;
+  color: var(--accent-ink);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  padding: 4px 8px;
+  border-radius: 8px;
+  margin-top: 6px;
+  font-weight: bold;
+  align-self: flex-start;
+}
+
+/* ---------------- skipped cards & badges ---------------- */
+.card.skipped {
+  background: color-mix(in srgb, var(--coral) 8%, transparent);
+  border-color: var(--coral);
+  opacity: 0.75;
+}
+.card.skipped .cname {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+.check.skipped {
+  background: var(--coral) !important;
+  border-color: var(--coral) !important;
+  color: #fff !important;
+}
+.skipped-status {
+  color: var(--coral) !important;
+  font-weight: bold !important;
+  border-color: var(--coral) !important;
+}
+
+/* ---------------- summary list indent ---------------- */
+.indent-fl {
+  padding-left: 20px !important;
+  color: var(--muted);
+  font-size: 13px !important;
+}
+.seth-row td {
+  border-bottom: none !important;
+}
+.set-label-cell {
+  font-weight: bold;
+  color: var(--accent-ink);
+  padding-top: 8px !important;
+  padding-bottom: 2px !important;
+  font-size: 13.5px;
+  border-bottom: 1.5px dashed var(--line) !important;
+}
+
+/* ---------------- habit checklist badges and reset button ---------------- */
+.h-badge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1.5px solid var(--ink);
+  background: color-mix(in srgb, var(--accent) 15%, var(--card));
+  color: var(--accent-ink);
+  font-weight: 700;
+  margin-left: auto;
+  margin-right: 8px;
+  align-self: center;
+}
+body:not(.clean) .h-badge {
+  border-radius: 8px 4px 7px 5px/5px 7px 4px 8px;
+}
+.h-badge.habit {
+  background: color-mix(in srgb, var(--coral) 15%, var(--card));
+  color: var(--coral);
+}
+.secbtn.reset-btn {
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+}
+.secbtn.reset-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 3px 0 rgba(43, 42, 40, .16);
+}
+
+/* ---------------- wellbeing rating component ---------------- */
+.wellbeing-box {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wellbeing-box .clab {
+  font-size: 13px;
+  color: var(--muted);
+}
+.wb-rating {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.wb-btn {
+  flex: 1;
+  height: 48px;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--card);
+  font-family: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: var(--ink);
+  box-shadow: 2px 3px 0 rgba(43,42,40,.08);
+}
+body:not(.clean) .wb-btn {
+  border-radius: 14px 10px 13px 9px/9px 13px 10px 14px;
+}
+.wb-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 2px 0 rgba(43,42,40,.08);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+.wb-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 2px 5px 8px rgba(17, 153, 138, 0.25);
+}
+.wb-emoji {
+  font-size: 20px;
+  line-height: 1.1;
+  transition: transform 0.2s ease;
+}
+.wb-btn.active .wb-emoji {
+  transform: scale(1.2);
+}
+.wb-num {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  margin-top: 1px;
+  color: var(--muted);
+}
+.wb-btn.active .wb-num {
+  color: rgba(255, 255, 255, 0.85);
+}
+.wb-rating.readonly {
+  opacity: 0.9;
+}
+.wb-rating.readonly .wb-btn {
+  cursor: default;
+  pointer-events: none;
+  box-shadow: none;
+  transform: none;
+}
+.wb-rating.readonly .wb-btn:not(.active) {
+  border-color: var(--line);
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+
+
