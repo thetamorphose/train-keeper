@@ -27,11 +27,11 @@
 - Вопросы спек: нет
 
 ## Активность (git, коммиты с Task:)
+- 85fc885 2026-10-21 docs: remove implemented backlog items (tasks 005-009) (task-2026-10-21-009)
+- d41e5b9 2026-10-21 docs: close out task-2026-10-21-009 — record result and regenerate progress (task-2026-10-21-009)
 - c77eaf1 2026-10-21 feat: workout settings page stub, entry from list card menu (task-2026-10-21-009)
 - bfaeb88 2026-10-21 docs: close out task-2026-10-21-008 — record result and regenerate progress (task-2026-10-21-008)
 - 4834a97 2026-10-21 feat: edit well-being rating and comment of finished workouts in history view (task-2026-10-21-008)
 - eabc5e0 2026-10-21 docs: close out task-2026-10-21-007 — record result and regenerate progress (task-2026-10-21-007)
 - 7f2ce69 2026-10-21 feat: duplicate exercise into another section or workout via card menu (task-2026-10-21-007)
 - f79bc95 2026-10-21 docs: close out task-2026-10-21-006 — record result and regenerate progress (task-2026-10-21-006)
-- c8ffcd9 2026-10-21 feat: duplicate and delete workout lists from home screen via card menu (task-2026-10-21-006)
-- eeb89e1 2026-10-21 docs: close out task-2026-10-21-005 — record fix result and regenerate progress (task-2026-10-21-005)

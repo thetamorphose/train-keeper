@@ -18,8 +18,3 @@ Not specced, not scheduled - reminders only. One line per item; when picked up, 
 - [ ] User authentication & sync
 - [ ] Offline mode (Service Workers)
 - [ ] Exercise library / standalone exercise templates (workout-template CRUD already shipped via /api/templates)
-- [ ] Delete & duplicate a whole workout session (workout-level action; only server DELETE /api/templates exists today)
-- [ ] Bug: skipped exercise does not count toward section completion — workout cannot be finished (see bugs/inbox/2026-10-21-skip-does-not-count-toward-section-completion.md)
-- [ ] Duplicate exercise into another section or another workout (card-level «Дублировать» within a section already exists — task-2026-10-21-003)
-- [ ] Edit post-workout well-being rating after the workout is already finished
-- [ ] Workout settings page (separate screen)
