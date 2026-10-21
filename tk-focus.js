@@ -65,7 +65,7 @@
    * Returns default application state
    */
   const DEFAULT = () => ({
-    mode: 'home', history: [], templates: [], activeTemplateId: null, title: 'Кросс-день', description: '',
+    mode: 'home', history: [], templates: [], activeTemplateId: null, settingsTemplateId: null, title: 'Кросс-день', description: '',
     type: 'workout',
     i: 0, comment: '', startedAt: 0, elapsed: 0, wellBeingRating: 0,
     sections: [
@@ -514,7 +514,7 @@
           '<div class="h-top"><span class="h-title">' + esc(t.title || 'Без названия') + '</span>' + typeBadge +
           '<button class="h-menu" data-act="tmenu" data-tid="' + t.id + '" title="Действия">⋯</button><span class="h-arrow">›</span></div>' +
           '<div class="h-stats">' + (t.sections ? t.sections.length : 0) + ' секций</div>' +
-          (t.id === menuId ? '<div class="kmenu"><button data-act="tdup" data-tid="' + t.id + '">Дублировать</button><button class="danger" data-act="tdel" data-tid="' + t.id + '">Удалить</button></div>' : '') +
+          (t.id === menuId ? '<div class="kmenu"><button data-act="tdup" data-tid="' + t.id + '">Дублировать</button><button data-act="tset" data-tid="' + t.id + '">Настройки</button><button class="danger" data-act="tdel" data-tid="' + t.id + '">Удалить</button></div>' : '') +
           '</div>';
       }).join('') + '</div>';
     }
@@ -571,6 +571,19 @@
       wdesc.style.display = (mode === 'active' && !state.description) ? 'none' : '';
     }
 
+    if (mode === 'settings') {
+      snav.style.display = 'none'; dots.style.display = 'none';
+      crumb.textContent = 'Настройки';
+      const t = (state.templates || []).find((x) => x.id === state.settingsTemplateId);
+      wtitle.textContent = t ? (t.title || 'Без названия') : 'Настройки';
+      wtitle.contentEditable = 'false';
+      if (wdesc) wdesc.style.display = 'none';
+      wpill.className = 'timer mono'; wpill.textContent = '⚙';
+      exBody.innerHTML = '<div class="home"><div class="h-empty">Страница настроек — параметры появятся позже.</div></div>';
+      const btn = $('#secbtn'); btn.className = 'secbtn go'; btn.dataset.act = 'closesettings';
+      btn.textContent = '← К спискам';
+      save(); return;
+    }
     if (mode === 'home') {
       snav.style.display = 'none'; dots.style.display = 'none';
       crumb.textContent = 'Главная';
@@ -873,6 +886,15 @@
         });
         return;
       }
+      case 'tset': {
+        const t = state.templates.find((x) => x.id === tid);
+        if (!t) return;
+        menuId = null; dupMode = null;
+        state.settingsTemplateId = tid; state.mode = 'settings'; state.title = t.title;
+        render();
+        return;
+      }
+      case 'closesettings': state.mode = 'home'; render(); return;
       case 'tdel': {
         const t = state.templates.find(x => x.id === tid);
         if (!t) return;
