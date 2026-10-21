@@ -1,7 +1,7 @@
 ---
 id: task-2026-10-21-010
 title: "Add 5 new ubiquitous-language terms from tasks 005-009"
-status: planned
+status: done
 created: "2026-10-21T14:53:48Z"
 updated: "2026-10-21T14:53:48Z"
 hermes_sessions: ["20261021_153710_21176d"]
@@ -12,10 +12,10 @@ checkpoint:
   git_status_clean: false
   backup_ref: ""
 result:
-  commits: []
-  files_changed: []
-  test_command: ""
-  test_result: ""
+  commits: [84a6da7]
+  files_changed: ["docs/constitution.md", "tasks/2026-10-21-010-add-5-new-ubiquitous-language-terms-from-tasks-005-009.md", "logs/task-session-map.yml", "docs/progress.md"]
+  test_command: "python tools/ai-agent-governance/scripts/validate_governance.py --project-root . --strict"
+  test_result: "VALIDATION_OK tasks=10 warnings=0"
 related:
   specs: []
   adr: []
@@ -32,14 +32,21 @@ related:
 - Owner gate (language): accepted all 5 proposed terms, explicitly rejected adding Fluid Utility.
 
 ## Acceptance criteria
-- [ ] 5 terms (Copy, Skipped, Closed, History entry, Settings page) added to the Ubiquitous language
+- [x] 5 terms (Copy, Skipped, Closed, History entry, Settings page) added to the Ubiquitous language
       table in docs/constitution.md with meanings and disallowed synonyms
-- [ ] GEMINI.md not touched (owner keeps the legacy glossary unexpanded)
-- [ ] Validator green
+- [x] GEMINI.md not touched (owner keeps the legacy glossary unexpanded)
+- [x] Validator green
 
 ## Output
 
-(work commit pending)
+Work commit `84a6da7`.
+- `docs/constitution.md`, Ubiquitous language table: +5 rows after Well-being rating — Copy (Копия),
+  Skipped (Пропущено), Closed (Закрыто), History entry (Запись истории), Settings page (Страница
+  настроек), each with meaning and disallowed synonyms.
+- Definitions encode the owner's decisions from tasks 005–009 (skipped does not count as done and
+  does not block completion; closed = done || skipped; only rating/comment editable in history).
+- Fluid Utility was proposed and explicitly rejected by the owner — not added.
+
 
 ## Rollback
 
