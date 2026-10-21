@@ -8,7 +8,7 @@ Modules already declared in CORE.md are listed as `declared`.
 
 | Path | Suggestion | Evidence | Owner decision (accept/reject) |
 |---|---|---|---|
-| `__tests__` | likely-supporting | name matches generic/technical pattern: __tests__ | |
+| `__tests__` | likely-supporting | name matches generic/technical pattern: __tests__ | rejected (2026-10-21, ADR-0006) |
 
 ## How to complete this proposal
 

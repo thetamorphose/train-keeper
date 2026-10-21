@@ -5,7 +5,7 @@
 - Colors: Teal/Cyan primary, Coral/Gold accents.
 
 ## Business Logic
-- NO SETS. Hierarchy is Workout -> Section -> Exercise.
+- Hierarchy is Workout -> Section -> Exercise. A Set (подход) is an optional checkable subtask of an exercise; an exercise without sets is a single task (owner-confirmed language, ADR-0006).
 - Dynamic fields: Weight, Reps, Distance, Time, Pose, Custom.
 
 ## Continuous Documentation
