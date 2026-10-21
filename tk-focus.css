@@ -215,6 +215,8 @@ textarea.comment::placeholder{color:var(--muted);}
 body:not(.clean) .h-item{border-radius:19px 13px 17px 12px/12px 17px 13px 19px;}
 .h-item:active{background:color-mix(in srgb,var(--accent) 8%,transparent);}
 .h-top{display:flex;justify-content:space-between;align-items:baseline;}
+.kmenu{max-height:60vh;overflow-y:auto;}
+.dupempty{display:block;padding:8px 10px;color:var(--ink,#666);font-size:13px;}
 .h-menu{border:none;background:none;color:var(--ink,#333);font-size:18px;line-height:1;padding:0 6px;cursor:pointer;}
 .h-menu:active{opacity:.6;}
 .h-title{font-size:17px;font-weight:700;}

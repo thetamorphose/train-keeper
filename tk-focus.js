@@ -125,7 +125,7 @@
   }
 
   const LSKEY = 'tk_focus_v4';
-  let state, editId = null, menuId = null, sheetExId = null, timerInt = null;
+  let state, editId = null, menuId = null, sheetExId = null, timerInt = null, dupMode = null;
   try {
     const raw = localStorage.getItem(LSKEY);
     state = raw ? JSON.parse(raw) : DEFAULT();
@@ -237,6 +237,20 @@
           body: JSON.stringify({ title: state.title, type: state.type || 'workout', sections: state.sections, description: state.description })
         });
       } catch (e) { console.error('Save template failed:', e); }
+    },
+    cloneExercise(ex) {
+      const c = JSON.parse(JSON.stringify(ex));
+      c.id = nid();
+      c.done = false;
+      c.skipped = false;
+      (c.fields || []).forEach((f) => (f.id = nid()));
+      (c.sets || []).forEach((s) => (s.id = nid()));
+      return c;
+    },
+    addExerciseToSection(sections, si, clone) {
+      if (!sections || !sections[si]) return false;
+      sections[si].ex.push(clone);
+      return true;
     },
     exerciseStatus(ex) {
       if (ex.sets && ex.sets.length > 0) {
@@ -368,9 +382,27 @@
       const isFirst = idx === 0;
       const isLast = idx === curSec().ex.length - 1;
       h += '<div class="kmenu">';
-      if (!isFirst) h += '<button data-act="moveup" data-id="' + ex.id + '">▲ Переместить вверх</button>';
-      if (!isLast) h += '<button data-act="movedown" data-id="' + ex.id + '">▼ Переместить вниз</button>';
-      h += '<button data-act="dup" data-id="' + ex.id + '">Дублировать</button><button data-act="edit" data-id="' + ex.id + '">Изменить</button><button class="danger" data-act="del" data-id="' + ex.id + '">Удалить</button></div>';
+      if (dupMode === 'section') {
+        h += '<button data-act="dupback" data-id="' + ex.id + '">← К меню</button>';
+        h += state.sections.map((s, si) => '<button data-act="dupgo" data-si="' + si + '" data-id="' + ex.id + '">' + esc(s.name || 'Секция ' + (si + 1)) + '</button>').join('') + '</div>';
+      } else if (dupMode === 'workout') {
+        h += '<button data-act="dupback" data-id="' + ex.id + '">← К меню</button>';
+        const others = (state.templates || []).filter((t) => t.id !== state.activeTemplateId);
+        h += (others.length
+          ? others.map((t) => '<button data-act="duppick" data-tid="' + t.id + '" data-id="' + ex.id + '">' + esc(t.title || 'Без названия') + '</button>').join('')
+          : '<span class="dupempty">Нет других списков</span>') + '</div>';
+      } else if (dupMode && typeof dupMode === 'object') {
+        const t = (state.templates || []).find((x) => x.id === dupMode.tid);
+        h += '<button data-act="dupback" data-id="' + ex.id + '">← К спискам</button>';
+        h += ((t && t.sections && t.sections.length)
+          ? t.sections.map((s, si) => '<button data-act="dupgo2" data-tid="' + t.id + '" data-si="' + si + '" data-id="' + ex.id + '">' + esc(s.name || 'Секция ' + (si + 1)) + '</button>').join('')
+          : '<span class="dupempty">В этом списке нет секций</span>') + '</div>';
+      } else {
+        if (!isFirst) h += '<button data-act="moveup" data-id="' + ex.id + '">▲ Переместить вверх</button>';
+        if (!isLast) h += '<button data-act="movedown" data-id="' + ex.id + '">▼ Переместить вниз</button>';
+        h += '<button data-act="dup" data-id="' + ex.id + '">Дублировать</button><button data-act="dupsec" data-id="' + ex.id + '">В секцию…</button><button data-act="dupwrk" data-id="' + ex.id + '">В тренировку…</button><button data-act="edit" data-id="' + ex.id + '">Изменить</button><button class="danger" data-act="del" data-id="' + ex.id + '">Удалить</button></div>';
+      }
+      h += '</div>';
     }
     h += '</div>';
     return h;
@@ -795,13 +827,14 @@
       return;
     }
     if (!e.target || typeof e.target.closest !== 'function') return;
-    if (menuId !== null && !e.target.closest('.kmenu') && !(e.target.closest('[data-act]') && ['menu', 'tmenu'].includes(e.target.closest('[data-act]').dataset.act))) { menuId = null; render(); return; }
+    if (menuId !== null && !e.target.closest('.kmenu') && !(e.target.closest('[data-act]') && ['menu', 'tmenu'].includes(e.target.closest('[data-act]').dataset.act))) { menuId = null; dupMode = null; render(); return; }
     const el = e.target.closest('[data-act]'); if (!el) return;
     const act = el.dataset.act,
           id = el.dataset.id || el.dataset.exId,
           fid = el.dataset.fid,
           i = el.dataset.i,
           tid = el.dataset.tid,
+          si = el.dataset.si,
           setId = el.dataset.setId;
     const ex = id ? findEx(id) : null;
     switch (act) {
@@ -946,7 +979,42 @@
       }
       case 'rmfield': ex.fields = ex.fields.filter((f) => f.id != fid); render(); tkLogic.saveTemplate(state); return;
       case 'addfield': sheetExId = ex.id; openSheet(); return;
-      case 'menu': menuId = (menuId === ex.id ? null : ex.id); render(); return;
+      case 'menu': menuId = (menuId === ex.id ? null : ex.id); dupMode = null; render(); return;
+      case 'dupsec': dupMode = 'section'; render(); return;
+      case 'dupwrk': dupMode = 'workout'; render(); return;
+      case 'dupback': dupMode = (dupMode && typeof dupMode === 'object') ? 'workout' : null; render(); return;
+      case 'duppick': dupMode = { tid }; render(); return;
+      case 'dupgo': {
+        if (!ex) return;
+        const c = tkLogic.cloneExercise(ex);
+        if (!tkLogic.addExerciseToSection(state.sections, +si, c)) { toast('Секция не найдена'); return; }
+        menuId = null; dupMode = null; render();
+        tkLogic.saveTemplate(state);
+        toast('Упражнение продублировано в «' + (state.sections[+si].name || 'Секция') + '»');
+        return;
+      }
+      case 'dupgo2': {
+        if (!ex) return;
+        const c = tkLogic.cloneExercise(ex);
+        const targetTid = (dupMode && typeof dupMode === 'object') ? dupMode.tid : tid;
+        const target = (state.templates || []).find((x) => x.id === targetTid);
+        if (!target) { toast('Список не найден'); return; }
+        const sections = target.sections || [];
+        if (!tkLogic.addExerciseToSection(sections, +si, c)) { toast('В этом списке нет секций'); return; }
+        fetch('/api/templates/' + targetTid, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sections })
+        }).then(async (r) => {
+          if (r.ok) {
+            menuId = null; dupMode = null;
+            await tkLogic.fetchTemplates(state);
+            render();
+            toast('Упражнение продублировано');
+          }
+        });
+        return;
+      }
       case 'dup': { const c = JSON.parse(JSON.stringify(ex)); c.id = nid(); c.done = false; c.fields.forEach((f) => (f.id = nid())); const idx = curSec().ex.indexOf(ex); curSec().ex.splice(idx + 1, 0, c); menuId = null; render(); tkLogic.saveTemplate(state); toast('Карточка продублирована'); return; }
       case 'edit': editId = ex.id; menuId = null; render(); return;
       case 'editdone': if (editId === ex.id) editId = null; render(); return;
