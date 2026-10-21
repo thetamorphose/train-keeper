@@ -25,7 +25,7 @@ Follow these visual guidelines for all UI generation:
 The AI is responsible for keeping documentation up-to-date as the project evolves. 
 **Rule:** If a code change affects the data schema, API routes, user flows, adds a new feature, or introduces a new dependency:
 1. **Pause and Inform:** The AI MUST explicitly inform the user: *"I need to update the documentation [filename] to reflect this change."*
-2. **Update Docs:** Update `DATA_MODEL.md`, `ROADMAP.md`, `CHANGELOG.md`, `DEPENDENCIES.md`, or create an `ADR` *before* finalizing the task.
+2. **Update Docs:** Update `docs/architecture/data-model.md`, `BACKLOG.md`, `CHANGELOG.md`, `DEPENDENCIES.md`, or create an `ADR` *before* finalizing the task.
 3. **Never let docs drift from code.**
 
 ## 🛠 TDD Workflow (Mandatory)
@@ -38,7 +38,7 @@ The AI is responsible for keeping documentation up-to-date as the project evolve
 - `server.js`: Express API and LowDB integration.
 - `tk-app.js`: Main application logic.
 - `tk-focus.js`: Focus-mode UI and interaction logic.
-- `docs/ai/`: AI-specific documentation (Architecture, Roadmap, ADRs).
+- `docs/`: Governance documentation (architecture in `docs/architecture/`, decisions in `docs/adr/` and `docs/agdr/`, current state in `docs/progress.md`); workflow in `AGENTS.md`.
 - `__tests__/`: All Jest tests.
 
 ## 📖 Glossary (Domain Language)

@@ -22,3 +22,8 @@ yarn-error.log*
 # Testing
 coverage/
 .jest/
+
+# Governance (tools/ai-agent-governance)
+__pycache__/
+*.pyc
+.governance-task.lock

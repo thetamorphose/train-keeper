@@ -5,12 +5,12 @@
 - Colors: Teal/Cyan primary, Coral/Gold accents.
 
 ## Business Logic
-- NO SETS. Hierarchy is Workout -> Section -> Exercise.
+- Hierarchy is Workout -> Section -> Exercise. A Set (подход) is an optional checkable subtask of an exercise; an exercise without sets is a single task (owner-confirmed language, ADR-0006).
 - Dynamic fields: Weight, Reps, Distance, Time, Pose, Custom.
 
 ## Continuous Documentation
-- The AI MUST proactively maintain documentation (`docs/ai/`).
-- If you change the DB schema, add an API route, or add a dependency, you MUST inform the user and update `DATA_MODEL.md`, `ROADMAP.md`, `CHANGELOG.md`, or `DEPENDENCIES.md` accordingly.
+- The AI MUST proactively maintain documentation (`docs/`). Governance workflow: `AGENTS.md` + `tools/ai-agent-governance/SKILL.md`.
+- If you change the DB schema, add an API route, or add a dependency, you MUST inform the user and update `docs/architecture/data-model.md`, `BACKLOG.md`, `CHANGELOG.md`, or `DEPENDENCIES.md` accordingly.
 
 ## Testing
 - TDD with Jest is mandatory. Always write tests first.
