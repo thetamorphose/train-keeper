@@ -479,8 +479,10 @@
           ? '<span class="h-badge habit">привычки</span>' 
           : '<span class="h-badge">тренировка</span>';
         return '<div class="h-item template" data-act="viewtemplate" data-tid="' + t.id + '">' +
-          '<div class="h-top"><span class="h-title">' + esc(t.title || 'Без названия') + '</span>' + typeBadge + '<span class="h-arrow">›</span></div>' +
+          '<div class="h-top"><span class="h-title">' + esc(t.title || 'Без названия') + '</span>' + typeBadge +
+          '<button class="h-menu" data-act="tmenu" data-tid="' + t.id + '" title="Действия">⋯</button><span class="h-arrow">›</span></div>' +
           '<div class="h-stats">' + (t.sections ? t.sections.length : 0) + ' секций</div>' +
+          (t.id === menuId ? '<div class="kmenu"><button data-act="tdup" data-tid="' + t.id + '">Дублировать</button><button class="danger" data-act="tdel" data-tid="' + t.id + '">Удалить</button></div>' : '') +
           '</div>';
       }).join('') + '</div>';
     }
@@ -793,7 +795,7 @@
       return;
     }
     if (!e.target || typeof e.target.closest !== 'function') return;
-    if (menuId !== null && !e.target.closest('.kmenu') && !(e.target.closest('[data-act]') && e.target.closest('[data-act]').dataset.act === 'menu')) { menuId = null; render(); return; }
+    if (menuId !== null && !e.target.closest('.kmenu') && !(e.target.closest('[data-act]') && ['menu', 'tmenu'].includes(e.target.closest('[data-act]').dataset.act))) { menuId = null; render(); return; }
     const el = e.target.closest('[data-act]'); if (!el) return;
     const act = el.dataset.act,
           id = el.dataset.id || el.dataset.exId,
@@ -820,6 +822,27 @@
       case 'createtemplate': {
         const type = el.dataset.type || 'workout';
         tkLogic.createNewTemplate(state, type).then(render);
+        return;
+      }
+      case 'tmenu': menuId = (menuId === tid ? null : tid); render(); return;
+      case 'tdup': {
+        menuId = null;
+        fetch('/api/templates/' + tid + '/duplicate', { method: 'POST' }).then(async (r) => {
+          if (r.ok) { await tkLogic.fetchTemplates(state); render(); toast('Список продублирован'); }
+        });
+        return;
+      }
+      case 'tdel': {
+        const t = state.templates.find(x => x.id === tid);
+        if (!t) return;
+        menuId = null;
+        if (!confirm('Удалить «' + (t.title || 'Без названия') + '»?')) { render(); return; }
+        fetch('/api/templates/' + tid, { method: 'DELETE' }).then(async () => {
+          if (state.activeTemplateId === tid) state.activeTemplateId = null;
+          await tkLogic.fetchTemplates(state);
+          render();
+          toast('Список удалён');
+        });
         return;
       }
       case 'viewtemplate': {

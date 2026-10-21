@@ -85,6 +85,26 @@ app.post('/api/templates', async (req, res) => {
 });
 
 /**
+ * POST /api/templates/:id/duplicate - Deep-copy a template as «<Имя> (копия)»
+ */
+app.post('/api/templates/:id/duplicate', async (req, res) => {
+  const { id } = req.params;
+  const src = db.data.templates.find(t => t.id === id);
+  if (!src) return res.status(404).json({ error: 'Not found' });
+
+  const copy = JSON.parse(JSON.stringify(src));
+  copy.id = crypto.randomUUID();
+  copy.title = (src.title || 'Без названия') + ' (копия)';
+  copy.createdAt = Date.now();
+
+  db.data.templates = db.data.templates || [];
+  const idx = db.data.templates.findIndex(t => t.id === id);
+  db.data.templates.splice(idx + 1, 0, copy);
+  await db.write();
+  res.status(201).json(copy);
+});
+
+/**
  * PUT /api/templates/:id - Update an existing template
  */
 app.put('/api/templates/:id', async (req, res) => {

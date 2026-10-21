@@ -102,4 +102,57 @@ describe('Templates API', () => {
     const found = getRes.body.find(t => t.id === id);
     expect(found).toBeUndefined();
   });
+
+  describe('POST /api/templates/:id/duplicate', () => {
+    test('AC-1: deep-copies sections/fields with a new id and « (копия)» title; original unchanged', async () => {
+      const createRes = await request(app)
+        .post('/api/templates')
+        .send({
+          title: 'Кросс-день',
+          type: 'workout',
+          sections: [{
+            name: 'Основной блок',
+            ex: [{ id: 'ex1', name: 'Отжимания', done: false, skipped: false, fields: [{ id: 'f1', label: 'Вес', value: 60 }] }]
+          }]
+        });
+      const id = createRes.body.id;
+
+      const dupRes = await request(app).post(`/api/templates/${id}/duplicate`);
+      expect(dupRes.status).toBe(201);
+      const copy = dupRes.body;
+      expect(copy.id).toBeDefined();
+      expect(copy.id).not.toBe(id);
+      expect(copy.title).toBe('Кросс-день (копия)');
+      expect(copy.type).toBe('workout');
+      expect(copy.sections[0].name).toBe('Основной блок');
+      expect(copy.sections[0].ex[0].fields[0].value).toBe(60);
+
+      const listRes = await request(app).get('/api/templates');
+      expect(listRes.body.some(t => t.id === id)).toBe(true);
+      const orig = listRes.body.find(t => t.id === id);
+      expect(orig.title).toBe('Кросс-день');
+      const copies = listRes.body.filter(t => t.title === 'Кросс-день (копия)');
+      expect(copies).toHaveLength(1);
+    });
+
+    test('AC-3: responds 404 for unknown id', async () => {
+      const res = await request(app).post('/api/templates/no-such-id/duplicate');
+      expect(res.status).toBe(404);
+    });
+
+    test('AC-2: deleted list disappears from GET /api/templates (reuse of DELETE)', async () => {
+      const createRes = await request(app)
+        .post('/api/templates')
+        .send({ title: 'Временный список', sections: [] });
+      const id = createRes.body.id;
+
+      const dupRes = await request(app).post(`/api/templates/${id}/duplicate`);
+      expect(dupRes.status).toBe(201);
+
+      await request(app).delete(`/api/templates/${id}`);
+      const listRes = await request(app).get('/api/templates');
+      expect(listRes.body.some(t => t.id === id)).toBe(false);
+      expect(listRes.body.some(t => t.title === 'Временный список (копия)')).toBe(true);
+    });
+  });
 });
