@@ -13,15 +13,28 @@ const PORT = 3000;
 // Environment-based database selection
 const env = process.env.NODE_ENV || 'production';
 const DATA_DIR = existsSync('/data') ? '/data' : '.';
-const DB_FILE = env === 'test' 
-  ? 'history.test.json' 
-  : (env === 'development' ? 'history.dev.json' : path.join(DATA_DIR, 'history.json'));
+const DB_FILE = process.env.TK_DB_FILE || (env === 'test'
+  ? 'history.test.json'
+  : (env === 'development' ? 'history.dev.json' : path.join(DATA_DIR, 'history.json')));
 
 /**
  * Initialize lowdb for history persistence
  */
 const defaultData = { history: [], templates: [] };
 const db = await JSONFilePreset(DB_FILE, defaultData);
+
+// Backfill stable ids for legacy history entries (needed for PUT /api/history/:id)
+export const backfillHistoryIds = (history) => {
+  let changed = false;
+  const list = (history || []).map((h) => {
+    if (!h.id) { changed = true; return { ...h, id: crypto.randomUUID() }; }
+    return h;
+  });
+  return { list, changed };
+};
+const __bf = backfillHistoryIds(db.data.history);
+db.data.history = __bf.list;
+if (__bf.changed) await db.write();
 
 export const app = express();
 
@@ -54,10 +67,27 @@ app.get('/api/history', (req, res) => {
  * @returns {Object} { success: true }
  */
 app.post('/api/history', async (req, res) => {
-  const workout = req.body;
+  const workout = { ...req.body, id: crypto.randomUUID() };
   db.data.history.unshift(workout);
   await db.write();
   res.status(201).json({ success: true });
+});
+
+/**
+ * PUT /api/history/:id - Update editable fields (wellBeingRating, comment) of a history entry
+ */
+app.put('/api/history/:id', async (req, res) => {
+  const { id } = req.params;
+  const entry = db.data.history.find((h) => h.id === id);
+  if (!entry) return res.status(404).json({ error: 'Not found' });
+
+  if (req.body.wellBeingRating !== undefined) {
+    const r = Math.round(Number(req.body.wellBeingRating));
+    entry.wellBeingRating = Math.min(5, Math.max(1, isNaN(r) ? 0 : r));
+  }
+  if (req.body.comment !== undefined) entry.comment = String(req.body.comment);
+  await db.write();
+  res.json(entry);
 });
 
 /**

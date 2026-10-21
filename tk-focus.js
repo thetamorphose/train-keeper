@@ -478,11 +478,11 @@
       h += '</table>';
     });
     h += '<div class="wellbeing-box"><div class="clab">Самочувствие</div>' +
-      '<div class="wb-rating' + (state.isViewingHistory ? ' readonly' : '') + '">';
+      '<div class="wb-rating">';
     const emojis = { 1: '😞', 2: '😐', 3: '🙂', 4: '😃', 5: '🤩' };
     for (let rating = 1; rating <= 5; rating++) {
       const activeClass = state.wellBeingRating === rating ? ' active' : '';
-      const disabledAttr = state.isViewingHistory ? ' disabled' : '';
+      const disabledAttr = '';
       h += '<button class="wb-btn' + activeClass + '" data-act="rate-wellbeing" data-val="' + rating + '"' + disabledAttr + '>' +
         '<span class="wb-emoji">' + emojis[rating] + '</span>' +
         '<span class="wb-num">' + rating + '</span>' +
@@ -681,6 +681,14 @@
   /**
    * Handle summary closure: either save to history or return from history view
    */
+  function syncHistoryEntry(entry) {
+    fetch('/api/history/' + entry.id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wellBeingRating: entry.wellBeingRating, comment: entry.comment })
+    });
+  }
+
   function closeSummary() {
     if (state.isViewingHistory) {
       state.isViewingHistory = false;
@@ -900,7 +908,7 @@
       case 'viewhistory': {
         const h = state.history[i];
         localStorage.setItem(LSKEY + '_draft', JSON.stringify(state));
-        state.isViewingHistory = true; state.mode = 'summary';
+        state.isViewingHistory = true; state.viewingHistoryIndex = i; state.mode = 'summary';
         state.title = h.title; state.elapsed = h.elapsed; state.comment = h.comment; state.wellBeingRating = h.wellBeingRating || 0; state.sections = h.sections;
         render(); return;
       }
@@ -1040,8 +1048,14 @@
       case 'startworkout': startWorkout(); return;
       case 'closesummary': closeSummary(); return;
       case 'rate-wellbeing': {
-        if (state.isViewingHistory) return;
         state.wellBeingRating = Number(el.dataset.val);
+        if (state.isViewingHistory && state.viewingHistoryIndex !== undefined) {
+          const entry = state.history[state.viewingHistoryIndex];
+          if (entry) {
+            entry.wellBeingRating = state.wellBeingRating;
+            if (entry.id) syncHistoryEntry(entry);
+          }
+        }
         render();
         save();
         return;
@@ -1091,7 +1105,16 @@
   });
   exBody.addEventListener('focusout', (e) => {
     if (!e.target || typeof e.target.closest !== 'function') return;
-    const el = e.target.closest('[data-act]'); if (!el || el.dataset.act === 'comment' || el.dataset.act === 'exnotes') { save(); return; }
+    const el = e.target.closest('[data-act]'); if (!el || el.dataset.act === 'comment' || el.dataset.act === 'exnotes') {
+      if (el && el.dataset.act === 'comment' && state.isViewingHistory && state.viewingHistoryIndex !== undefined) {
+        const entry = state.history[state.viewingHistoryIndex];
+        if (entry) {
+          entry.comment = state.comment;
+          if (entry.id) syncHistoryEntry(entry);
+        }
+      }
+      save(); return;
+    }
     const exId = el.dataset.id || el.dataset.exId;
     const ex = exId ? findEx(exId) : null; if (!ex) return;
     let f = null;

@@ -185,14 +185,15 @@ describe('Post-workout Well-being Rating Scale', () => {
     expect(window.__tkState.isViewingHistory).toBe(true);
     expect(window.__tkState.wellBeingRating).toBe(3);
 
-    // Verify rating buttons are disabled and readonly class is added
+    // Since specs/004 the rating is editable in history view (owner decision 2026-10-21):
+    // buttons are enabled and a tap updates the history entry immediately
     const exBody = document.getElementById('exBody');
     const ratingContainer = exBody.querySelector('.wb-rating');
-    expect(ratingContainer.classList.contains('readonly')).toBe(true);
+    expect(ratingContainer.classList.contains('readonly')).toBe(false);
 
     const buttons = exBody.querySelectorAll('.wb-btn');
     buttons.forEach(btn => {
-      expect(btn.disabled).toBe(true);
+      expect(btn.disabled).toBe(false);
     });
 
     // Button 3 should be active
