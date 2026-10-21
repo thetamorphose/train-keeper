@@ -1,9 +1,9 @@
 ---
 id: task-2026-10-21-003
 title: "Backlog vs code audit: close de-facto done items, trim partials"
-status: in_progress
+status: done
 created: "2026-10-21T12:42:28Z"
-updated: "2026-10-21T12:55:00Z"
+updated: "2026-10-21T12:58:00Z"
 hermes_sessions: ["20261021_153710_21176d"]
 skill_version: "product-agent-governance@0.4.0"
 tags: ["chore"]
@@ -12,10 +12,10 @@ checkpoint:
   git_status_clean: false
   backup_ref: ""
 result:
-  commits: []
-  files_changed: []
+  commits: [921dc25]
+  files_changed: ["BACKLOG.md", "tasks/2026-10-21-003-backlog-vs-code-audit-close-de-facto-done-items-trim-partial.md", "logs/task-session-map.yml", "docs/progress.md"]
   test_command: "npm run test"
-  test_result: ""
+  test_result: "Test Suites: 9 passed, 9 total; Tests: 49 passed, 49 total; validate_governance.py --strict: VALIDATION_OK"
 related:
   specs: []
   adr: []
@@ -39,14 +39,14 @@ related:
 
 ## Acceptance criteria
 
-- [ ] Items closed as de-facto done and removed from `BACKLOG.md` (moved here per backlog protocol):
+- [x] Items closed as de-facto done and removed from `BACKLOG.md` (moved here per backlog protocol):
       Basic API for Workout Management (CRUD); Duplicate/Edit Exercise Card; Real-time Tweaks panel.
-- [ ] Partial items trimmed in `BACKLOG.md` to the remaining scope only: Dynamic Field Management
+- [x] Partial items trimmed in `BACKLOG.md` to the remaining scope only: Dynamic Field Management
       (duplication of fields remains); Workout history & analytics (analytics remains);
       Exercise library / templates (library remains).
-- [ ] Every closed/trimmed claim carries code evidence (file:line) recorded in Output.
-- [ ] `npm run test` green; `validate_governance.py --strict` green; `docs/progress.md` regenerated.
-- [ ] No changes to application code; `IDEA.md` (unrelated untracked file) not committed.
+- [x] Every closed/trimmed claim carries code evidence (file:line) recorded in Output.
+- [x] `npm run test` green; `validate_governance.py --strict` green; `docs/progress.md` regenerated.
+- [x] No changes to application code; `IDEA.md` (unrelated untracked file) not committed.
 
 ## Output
 
