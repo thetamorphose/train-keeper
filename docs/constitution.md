@@ -19,6 +19,11 @@ _(Transcribed from the pre-governance project documents during the v0.4.0 migrat
 | Dynamic field | Per-exercise value: Weight, Reps, Distance, Time, Pose or Custom | parameter, attribute |
 | Focus Mode | The section-based workout execution UI | focus view |
 | Well-being rating | 5-point post-workout self-rating | mood, feeling |
+| Copy (Копия) | Full clone of a template or exercise with fresh ids on every level (card, fields, sets); a list copy's title is suffixed «(копия)» | клон, дубль |
+| Skipped (Пропущено) | Status of an exercise or set: marked as skipped; not counted as done and does not block section completion | отменено, игнор |
+| Closed (Закрыто) | An exercise that is done or skipped; a section is finishable when all its exercises are closed | завершено, пройдено |
+| History entry (Запись истории) | A saved finished workout with a stable id; only the well-being rating and comment are editable after the fact | лог, журнал |
+| Settings page (Страница настроек) | Per-list settings screen (currently a stub without parameters); opened from the list card menu | preferences, опции |
 
 ## Architecture principles
 
