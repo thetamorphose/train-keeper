@@ -14,7 +14,7 @@ The application uses a "Pure Logic" approach for state mutations to facilitate T
 - **`tkLogic`**: An internal object within `tk-focus.js` (exposed as `window.__tkLogic` in test environments) that contains pure functions for mutating the workout state (e.g., `addSection`, `deleteExercise`).
 - **TDD Workflow**: All state-changing logic must be implemented in `tkLogic` and covered by Jest tests in the `/__tests__` directory before being integrated into the UI handlers.
 - `/tk-focus.css`: Styles specifically for the Focus mode.
-- `/docs/ai/`: Detailed documentation for AI agents.
+- `/docs/`: Governance documentation (architecture, ADR/AgDR, progress) maintained under `tools/ai-agent-governance` rules.
 
 ## Data Model (LowDB Schema)
 The database (`db.json` / `history.json`) follows this structure:

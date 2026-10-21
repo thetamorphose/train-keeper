@@ -9,8 +9,8 @@
 - Dynamic fields: Weight, Reps, Distance, Time, Pose, Custom.
 
 ## Continuous Documentation
-- The AI MUST proactively maintain documentation (`docs/ai/`).
-- If you change the DB schema, add an API route, or add a dependency, you MUST inform the user and update `DATA_MODEL.md`, `ROADMAP.md`, `CHANGELOG.md`, or `DEPENDENCIES.md` accordingly.
+- The AI MUST proactively maintain documentation (`docs/`). Governance workflow: `AGENTS.md` + `tools/ai-agent-governance/SKILL.md`.
+- If you change the DB schema, add an API route, or add a dependency, you MUST inform the user and update `docs/architecture/data-model.md`, `BACKLOG.md`, `CHANGELOG.md`, or `DEPENDENCIES.md` accordingly.
 
 ## Testing
 - TDD with Jest is mandatory. Always write tests first.
