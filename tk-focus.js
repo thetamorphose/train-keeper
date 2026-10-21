@@ -238,6 +238,29 @@
         });
       } catch (e) { console.error('Save template failed:', e); }
     },
+    exerciseStatus(ex) {
+      if (ex.sets && ex.sets.length > 0) {
+        const t = ex.sets.length;
+        const d = ex.sets.filter((s) => s.done).length;
+        const k = ex.sets.filter((s) => s.skipped).length;
+        if (d > t / 2) return 'done';
+        if (k > t / 2) return 'skipped';
+        if (d === k && d + k === t) return 'done';
+        return 'open';
+      }
+      if (ex.done) return 'done';
+      if (ex.skipped) return 'skipped';
+      return 'open';
+    },
+    sectionProgress(sec) {
+      const p = { done: 0, skipped: 0, total: sec.ex.length };
+      for (const e of sec.ex) {
+        const st = this.exerciseStatus(e);
+        if (st === 'done') p.done++;
+        else if (st === 'skipped') p.skipped++;
+      }
+      return p;
+    },
     moveExerciseUp(state, id) {
       const sec = state.sections[state.i];
       const idx = sec.ex.findIndex(x => x.id == id);
@@ -542,7 +565,7 @@
     wtitle.textContent = state.title;
     const sec = curSec();
     $('#sname').textContent = sec.name;
-    const total = sec.ex.length, done = sec.ex.filter((e) => e.done).length;
+    const prog = tkLogic.sectionProgress(sec), total = prog.total, done = prog.done, skipped = prog.skipped;
     crumb.textContent = mode === 'active' ? 'Активная тренировка' : 'Создание тренировки';
     wtitle.contentEditable = mode === 'build' ? 'true' : 'false';
     
@@ -553,7 +576,7 @@
     }
     const showProgress = mode === 'active' || (mode === 'build' && state.type === 'habit');
     $('#ssub').textContent = 'Секция ' + (state.i + 1) + ' из ' + state.sections.length +
-      (showProgress ? ' · выполнено ' + done + '/' + total : ' · ' + total + ' упр.');
+      (showProgress ? ' · выполнено ' + done + '/' + total + (skipped ? ' · пропущено ' + skipped : '') : ' · ' + total + ' упр.');
 
     let h = sec.ex.map(cardHTML).join('');
     if (mode === 'build') h += '<div class="addexc" data-act="addexc">＋ упражнение</div>';
@@ -591,7 +614,7 @@
       }
     }
     else if (total === 0) { btn.className = 'secbtn ghost'; btn.dataset.act = 'nextsec'; btn.textContent = 'Нет упражнений'; }
-    else if (done < total) { btn.className = 'secbtn ghost'; btn.dataset.act = 'nextsec'; btn.textContent = 'Выполнено ' + done + ' из ' + total; }
+    else if (done + skipped < total) { btn.className = 'secbtn ghost'; btn.dataset.act = 'nextsec'; btn.textContent = 'Выполнено ' + done + (skipped ? ' · пропущено ' + skipped : '') + ' из ' + total; }
     else if (!last) { btn.className = 'secbtn go'; btn.dataset.act = 'nextsec'; btn.textContent = 'Следующая секция →'; }
     else { btn.className = 'secbtn finish'; btn.dataset.act = 'nextsec'; btn.textContent = '✓ Завершить тренировку'; }
     save();
@@ -710,8 +733,9 @@
           if (set) {
             set.skipped = !set.skipped;
             if (set.skipped) set.done = false;
-            ex.done = ex.sets.every(s => s.done || s.skipped);
-            ex.skipped = ex.sets.every(s => s.skipped);
+            const st = tkLogic.exerciseStatus(ex);
+            ex.done = st === 'done';
+            ex.skipped = st === 'skipped';
             render();
             toast(set.skipped ? 'Подход пропущен' : 'Подход возвращен');
           }
@@ -845,8 +869,9 @@
           if (set) {
             set.done = !set.done;
             if (set.done) set.skipped = false;
-            ex.done = ex.sets.every(s => s.done || s.skipped);
-            ex.skipped = ex.sets.every(s => s.skipped);
+            const st = tkLogic.exerciseStatus(ex);
+            ex.done = st === 'done';
+            ex.skipped = st === 'skipped';
             render();
             if (state.mode === 'build' && state.type === 'habit') {
               tkLogic.saveTemplate(state);
