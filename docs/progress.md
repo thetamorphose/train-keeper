@@ -1,5 +1,5 @@
 # Project State (generated — do not edit; run gen_progress.py)
-Обновлено: 2026-10-29T11:58:49Z. Источники: tasks/, specs/, bugs/, tech-debt.md, git log.
+Обновлено: 2026-10-29T12:02:41Z. Источники: tasks/, specs/, bugs/, tech-debt.md, git log.
 
 ## Реализовано
 - task-2026-10-21-001 «Migrate project to product-agent-governance v0.4.0» — done, коммиты [5bfaa9e]
@@ -17,6 +17,7 @@
 - task-2026-10-29-003 «Delete individual history entries (DELETE /api/history/:id + list UI)» — done, коммиты [0dc2a96] → specs/007-history-entry-delete/spec.md
 - task-2026-10-29-004 «Bugfix: sets appear pre-selected at workout start» — done, коммиты [f9ea740] → specs/008-sets-preselected-bugfix/spec.md
 - task-2026-10-29-005 «Hide top panel on scroll down in active workout (timer stays in place)» — done, коммиты [2e0f6e4] → specs/009-header-collapse-on-scroll/spec.md
+- task-2026-10-29-006 «Unpin bottom workout button (in-flow at page bottom)» — done, коммиты [5ba27d3] → specs/010-unpin-bottom-button/spec.md
 
 ## В работе / запланировано
 - нет
@@ -30,6 +31,7 @@
 - specs/007-history-entry-delete: шаги 4/4
 - specs/008-sets-preselected-bugfix: шаги 0/0
 - specs/009-header-collapse-on-scroll: шаги 4/4
+- specs/010-unpin-bottom-button: шаги 5/5
 
 ## Открыто
 - Баги: нет
@@ -37,11 +39,11 @@
 - Вопросы спек: нет
 
 ## Активность (git, коммиты с Task:)
+- 5ba27d3 2026-10-29 feat: unpin bottom workout button into content flow (specs/010, task-2026-10-29-006) (task-2026-10-29-006)
+- ebdfde1 2026-10-29 docs: close out task-2026-10-29-005 — record result and regenerate progress (task-2026-10-29-005)
 - 2e0f6e4 2026-10-29 feat: collapse header on scroll in active workout, timer keeps position (specs/009, task-2026-10-29-005) (task-2026-10-29-005)
 - 93741f4 2026-10-29 docs: add plan.md to specs/008 (validator structure requirement) (task-2026-10-29-004)
 - a8ee2f4 2026-10-29 docs: close out task-2026-10-29-004 — record result and regenerate progress (task-2026-10-29-004)
 - f9ea740 2026-10-29 fix: reset set flags at workout start (specs/008, task-2026-10-29-004) (task-2026-10-29-004)
 - fd1f3e1 2026-10-29 docs: close out task-2026-10-29-003 — record result and regenerate progress (task-2026-10-29-003)
 - 0dc2a96 2026-10-29 feat: delete individual history entries (specs/007, task-2026-10-29-003) (task-2026-10-29-003)
-- 0ddb849 2026-10-29 docs: close out task-2026-10-29-002 — record result and regenerate progress (task-2026-10-29-002)
-- 7665c56 2026-10-29 feat: exercise enable/disable toggle (specs/006, task-2026-10-29-002) (task-2026-10-29-002)
