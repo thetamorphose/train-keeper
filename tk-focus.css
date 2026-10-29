@@ -460,6 +460,16 @@ body:not(.clean) .set-row {
   align-self: flex-start;
 }
 
+/* ---------------- disabled cards ---------------- */
+.card.disabled {
+  opacity: 0.45;
+  border-style: dashed;
+}
+.card.disabled .cname {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
 /* ---------------- skipped cards & badges ---------------- */
 .card.skipped {
   background: color-mix(in srgb, var(--coral) 8%, transparent);

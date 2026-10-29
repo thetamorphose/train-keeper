@@ -138,6 +138,7 @@
     state.sections.forEach((s) => s.ex.forEach((e) => {
       if (e.id >= _id) _id = e.id + 1;
       if (e.skipped === undefined) e.skipped = false;
+      if (e.enabled === undefined) e.enabled = true;
       if (e.notes === undefined) e.notes = '';
       if (!e.sets) e.sets = [];
       e.fields.forEach((f) => {
@@ -253,6 +254,7 @@
       return true;
     },
     exerciseStatus(ex) {
+      if (ex.enabled === false) return 'disabled';
       if (ex.sets && ex.sets.length > 0) {
         const t = ex.sets.length;
         const d = ex.sets.filter((s) => s.done).length;
@@ -267,14 +269,24 @@
       return 'open';
     },
     sectionProgress(sec) {
-      const p = { done: 0, skipped: 0, total: sec.ex.length };
+      const p = { done: 0, skipped: 0, total: 0 };
       for (const e of sec.ex) {
+        if (e.enabled === false) continue;
+        p.total++;
         const st = this.exerciseStatus(e);
         if (st === 'done') p.done++;
         else if (st === 'skipped') p.skipped++;
       }
       return p;
     },
+    setExerciseEnabled(state, id, enabled) {
+      for (const sec of state.sections) {
+        const ex = sec.ex.find((x) => x.id == id);
+        if (ex) { ex.enabled = !!enabled; return true; }
+      }
+      return false;
+    },
+    isEnabled(e) { return e.enabled !== false; },
     moveExerciseUp(state, id) {
       const sec = state.sections[state.i];
       const idx = sec.ex.findIndex(x => x.id == id);
@@ -351,7 +363,8 @@
     const active = state.mode === 'active';
     const editing = ex.id === editId && state.mode === 'build';
     const canCheck = active || (state.type === 'habit' && state.mode === 'build' && !editing);
-    const cls = 'card' + (canCheck ? ' tappable' : '') + ((active || state.type === 'habit') && ex.done ? ' done' : '') + ((active || state.type === 'habit') && ex.skipped ? ' skipped' : '') + (editing ? ' editing' : '');
+    const disabled = ex.enabled === false;
+    const cls = 'card' + (canCheck ? ' tappable' : '') + ((active || state.type === 'habit') && ex.done ? ' done' : '') + ((active || state.type === 'habit') && ex.skipped ? ' skipped' : '') + (editing ? ' editing' : '') + (disabled ? ' disabled' : '');
     let h = '<div class="' + cls + '"' + (canCheck ? ' data-act="toggle" data-id="' + ex.id + '"' : '') + '>';
     h += '<div class="card-top">';
     if (canCheck) {
@@ -400,7 +413,7 @@
       } else {
         if (!isFirst) h += '<button data-act="moveup" data-id="' + ex.id + '">▲ Переместить вверх</button>';
         if (!isLast) h += '<button data-act="movedown" data-id="' + ex.id + '">▼ Переместить вниз</button>';
-        h += '<button data-act="dup" data-id="' + ex.id + '">Дублировать</button><button data-act="dupsec" data-id="' + ex.id + '">В секцию…</button><button data-act="dupwrk" data-id="' + ex.id + '">В тренировку…</button><button data-act="edit" data-id="' + ex.id + '">Изменить</button><button class="danger" data-act="del" data-id="' + ex.id + '">Удалить</button></div>';
+        h += '<button data-act="dup" data-id="' + ex.id + '">Дублировать</button><button data-act="dupsec" data-id="' + ex.id + '">В секцию…</button><button data-act="dupwrk" data-id="' + ex.id + '">В тренировку…</button><button data-act="toggle-en" data-id="' + ex.id + '">' + (disabled ? 'Включить' : 'Выключить') + '</button><button data-act="edit" data-id="' + ex.id + '">Изменить</button><button class="danger" data-act="del" data-id="' + ex.id + '">Удалить</button></div>';
       }
       h += '</div>';
     }
@@ -625,12 +638,13 @@
     $('#ssub').textContent = 'Секция ' + (state.i + 1) + ' из ' + state.sections.length +
       (showProgress ? ' · выполнено ' + done + '/' + total + (skipped ? ' · пропущено ' + skipped : '') : ' · ' + total + ' упр.');
 
-    let h = sec.ex.map(cardHTML).join('');
+    const renderEx = mode === 'active' ? sec.ex.filter(tkLogic.isEnabled) : sec.ex;
+    let h = renderEx.map(cardHTML).join('');
     if (mode === 'build') h += '<div class="addexc" data-act="addexc">＋ упражнение</div>';
     exBody.innerHTML = h;
 
     dots.innerHTML = state.sections.map((s, k) => {
-      const full = (mode === 'active' || state.type === 'habit') && s.ex.length && s.ex.every((e) => e.done || e.skipped);
+      const full = (mode === 'active' || state.type === 'habit') && s.ex.length && s.ex.every((e) => e.enabled === false || e.done || e.skipped);
       return '<i class="' + (k === state.i ? 'on ' : '') + (full ? 'full' : '') + '" data-act="dot" data-i="' + k + '"></i>';
     }).join('') + (mode === 'build' ? '<i class="addx" data-act="addsec" title="добавить секцию"></i>' : '');
 
@@ -724,7 +738,10 @@
       elapsed: state.elapsed,
       comment: state.comment,
       wellBeingRating: state.wellBeingRating || 0,
-      sections: JSON.parse(JSON.stringify(state.sections))
+      sections: state.sections
+        .map((s) => ({ ...s, ex: s.ex.filter((e) => e.enabled !== false) }))
+        .filter((s) => s.ex.length > 0)
+        .map((s) => JSON.parse(JSON.stringify(s)))
     };
 
     // Save to server
@@ -1048,6 +1065,14 @@
       case 'dup': { const c = JSON.parse(JSON.stringify(ex)); c.id = nid(); c.done = false; c.fields.forEach((f) => (f.id = nid())); const idx = curSec().ex.indexOf(ex); curSec().ex.splice(idx + 1, 0, c); menuId = null; render(); tkLogic.saveTemplate(state); toast('Карточка продублирована'); return; }
       case 'edit': editId = ex.id; menuId = null; render(); return;
       case 'editdone': if (editId === ex.id) editId = null; render(); return;
+      case 'toggle-en': {
+        tkLogic.setExerciseEnabled(state, id, ex.enabled === false);
+        menuId = null;
+        toast(ex.enabled === false ? 'Упражнение выключено' : 'Упражнение включено');
+        render();
+        tkLogic.saveTemplate(state);
+        return;
+      }
       case 'del': {
         const res = tkLogic.deleteExercise(state, id);
         menuId = null;
@@ -1100,7 +1125,7 @@
       }
       case 'nextsec': {
         if (state.mode !== 'active' && !(state.mode === 'build' && state.type === 'habit')) return;
-        const sec = curSec(); if (!sec.ex.length || !sec.ex.every((x) => x.done || x.skipped)) return;
+        const sec = curSec(); if (!sec.ex.length || !sec.ex.every((x) => x.enabled === false || x.done || x.skipped)) return;
         if (state.i < state.sections.length - 1) { state.i++; render(); exBody.scrollTop = 0; }
         else finishWorkout();
         return;
