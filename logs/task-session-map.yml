@@ -83,3 +83,11 @@ mappings:
 # task-2026-10-29-006
 - task_id: task-2026-10-29-006
   session_ids: ["20261029_134711_abc123"]
+
+# task-2026-10-29-007
+- task_id: task-2026-10-29-007
+  session_ids: ["20261029_134711_abc123"]
+
+# task-2026-10-29-007
+- task_id: task-2026-10-29-007
+  session_ids: ["20261029_134711_abc123"]

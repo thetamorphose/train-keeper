@@ -311,6 +311,8 @@
     window.__tkState = state;
     window.initSetsForExercise = initSetsForExercise;
     window.__tkRender = render;
+    window.__tkTrackSectionTime = trackSectionTime;
+    window.__tkSwitchSection = switchSection;
   }
 
   const dispVal = (f, v) => (f.type === 'time' ? mmss(v) : fmt(v)) + (f.type !== 'time' && f.unit ? ' ' + f.unit : '');
@@ -447,8 +449,10 @@
       : ('⏱ ' + mmss(Math.floor(state.elapsed / 1000)) + ' · ' + (diffs ? '<span class="hl">' + diffs + ' откл. от плана</span>' : 'всё по плану'));
     h += '<div class="sumhead"><div class="big">' + titleText + '</div>' +
       '<div class="sub">' + subText + '</div></div>';
-    state.sections.forEach((s) => {
-      h += '<table class="rtable"><tr class="sech"><td>' + esc(s.name) + '</td><td class="hd">План</td><td class="hd">Факт</td></tr>';
+    const sectionTimes = state.sectionTimes || [];
+    state.sections.forEach((s, si) => {
+      const timeBadge = (!isHabit && sectionTimes[si]) ? ' <span class="sec-time">⏱ ' + mmss(sectionTimes[si]) + '</span>' : '';
+      h += '<table class="rtable"><tr class="sech"><td>' + esc(s.name) + timeBadge + '</td><td class="hd">План</td><td class="hd">Факт</td></tr>';
       s.ex.forEach((e) => {
         let statusText = '';
         if (e.skipped) statusText = ' <span class="skip skipped-status">пропущено</span>';
@@ -705,6 +709,7 @@
    */
   function startWorkout() {
     state.mode = 'active'; state.i = 0; state.startedAt = Date.now(); state.comment = ''; state.wellBeingRating = 0;
+    state.sectionTimes = [0]; state.curSectionStartedAt = Date.now();
     state.sections.forEach((s) => s.ex.forEach((e) => {
       e.done = false;
       e.skipped = false;
@@ -716,10 +721,26 @@
     editId = null; menuId = null; render(); startTimer(); exBody.scrollTop = 0;
   }
   
+  /* ---------------- per-section time tracking (specs/011) ---------------- */
+  function trackSectionTime(state, now) {
+    if (state.mode !== 'active' || !state.startedAt) return;
+    if (!state.sectionTimes) state.sectionTimes = [];
+    if (state.curSectionStartedAt === undefined || state.curSectionStartedAt === null) {
+      state.curSectionStartedAt = state.startedAt;
+    }
+    const delta = Math.max(0, Math.floor((now - state.curSectionStartedAt) / 1000));
+    state.sectionTimes[state.i] = (state.sectionTimes[state.i] || 0) + delta;
+    state.curSectionStartedAt = now;
+  }
+  function switchSection(state, newIndex, now) {
+    if (state.mode === 'active') trackSectionTime(state, now || Date.now());
+    state.i = newIndex;
+  }
+
   /**
    * Transition from 'active' to 'summary' mode
    */
-  function finishWorkout() { state.mode = 'summary'; state.elapsed = state.type === 'habit' ? 0 : Date.now() - state.startedAt; stopTimer(); render(); exBody.scrollTop = 0; }
+  function finishWorkout() { trackSectionTime(state, Date.now()); state.mode = 'summary'; state.elapsed = state.type === 'habit' ? 0 : Date.now() - state.startedAt; state.curSectionStartedAt = null; stopTimer(); render(); exBody.scrollTop = 0; }
   
   /**
    * Handle summary closure: either save to history or return from history view
@@ -757,7 +778,8 @@
       sections: state.sections
         .map((s) => ({ ...s, ex: s.ex.filter((e) => e.enabled !== false) }))
         .filter((s) => s.ex.length > 0)
-        .map((s) => JSON.parse(JSON.stringify(s)))
+        .map((s) => JSON.parse(JSON.stringify(s))),
+      sectionTimes: (state.sectionTimes || []).slice()
     };
 
     // Save to server
@@ -771,6 +793,8 @@
     state.i = 0;
     state.comment = '';
     state.wellBeingRating = 0;
+    state.sectionTimes = [];
+    state.curSectionStartedAt = null;
     state.sections.forEach((s) => s.ex.forEach((e) => { 
       e.done = false; 
       e.skipped = false;
@@ -974,6 +998,7 @@
         localStorage.setItem(LSKEY + '_draft', JSON.stringify(state));
         state.isViewingHistory = true; state.viewingHistoryIndex = i; state.mode = 'summary';
         state.title = h.title; state.elapsed = h.elapsed; state.comment = h.comment; state.wellBeingRating = h.wellBeingRating || 0; state.sections = h.sections;
+        state.sectionTimes = h.sectionTimes || []; state.curSectionStartedAt = null;
         render(); return;
       }
       case 'toggle':
@@ -1109,7 +1134,7 @@
         return;
       }
       case 'addexc': { const ne = mkEx('Новое упражнение', [mkField(tpl('повторения'), 10)]); curSec().ex.push(ne); editId = ne.id; render(); tkLogic.saveTemplate(state); exBody.scrollTop = exBody.scrollHeight; return; }
-      case 'dot': state.i = +i; menuId = null; editId = null; render(); exBody.scrollTop = 0; return;
+      case 'dot': switchSection(state, +i); menuId = null; editId = null; render(); exBody.scrollTop = 0; return;
       case 'addsec': {
         editId = tkLogic.addSection(state);
         render();
@@ -1151,15 +1176,15 @@
       case 'nextsec': {
         if (state.mode !== 'active' && !(state.mode === 'build' && state.type === 'habit')) return;
         const sec = curSec(); if (!sec.ex.length || !sec.ex.every((x) => x.enabled === false || x.done || x.skipped)) return;
-        if (state.i < state.sections.length - 1) { state.i++; render(); exBody.scrollTop = 0; }
+        if (state.i < state.sections.length - 1) { switchSection(state, state.i + 1); render(); exBody.scrollTop = 0; }
         else finishWorkout();
         return;
       }
     }
   });
 
-  $('[data-prev]').addEventListener('click', () => { if (state.mode === 'summary') return; state.i = (state.i - 1 + state.sections.length) % state.sections.length; menuId = null; editId = null; render(); exBody.scrollTop = 0; });
-  $('[data-next]').addEventListener('click', () => { if (state.mode === 'summary') return; state.i = (state.i + 1) % state.sections.length; menuId = null; editId = null; render(); exBody.scrollTop = 0; });
+  $('[data-prev]').addEventListener('click', () => { if (state.mode === 'summary') return; switchSection(state, (state.i - 1 + state.sections.length) % state.sections.length); menuId = null; editId = null; render(); exBody.scrollTop = 0; });
+  $('[data-next]').addEventListener('click', () => { if (state.mode === 'summary') return; switchSection(state, (state.i + 1) % state.sections.length); menuId = null; editId = null; render(); exBody.scrollTop = 0; });
 
   exBody.addEventListener('input', (e) => {
     if (!e.target || typeof e.target.closest !== 'function') return;
