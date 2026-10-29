@@ -1,5 +1,5 @@
 # Project State (generated — do not edit; run gen_progress.py)
-Обновлено: 2026-10-29T12:30:12Z. Источники: tasks/, specs/, bugs/, tech-debt.md, git log.
+Обновлено: 2026-10-29T14:00:11Z. Источники: tasks/, specs/, bugs/, tech-debt.md, git log.
 
 ## Реализовано
 - task-2026-10-21-001 «Migrate project to product-agent-governance v0.4.0» — done, коммиты [5bfaa9e]
@@ -20,6 +20,7 @@
 - task-2026-10-29-006 «Unpin bottom workout button (in-flow at page bottom)» — done, коммиты [5ba27d3] → specs/010-unpin-bottom-button/spec.md
 - task-2026-10-29-007 «Show time spent per section on workout finish» — done, коммиты [678e676] → specs/011-section-time-summary/spec.md
 - task-2026-10-29-008 «Per-exercise session comment and emotional rating during active workout» — done, коммиты [5bac558] → specs/012-exercise-session-feedback/spec.md
+- task-2026-10-29-009 «Add 3 ubiquitous-language terms from tasks 006-008 to the constitution» — done, коммиты [46e3330]
 
 ## В работе / запланировано
 - нет
@@ -43,11 +44,11 @@
 - Вопросы спек: нет
 
 ## Активность (git, коммиты с Task:)
+- 46e3330 2026-10-29 docs: add 3 ubiquitous-language terms from tasks 006-008 to the constitution (task-2026-10-29-009) (task-2026-10-29-009)
+- d051e91 2026-10-29 docs: close out task-2026-10-29-008 — record result and regenerate progress (task-2026-10-29-008)
 - 5bac558 2026-10-29 feat: per-exercise session comment and rating in active workout (specs/012, task-2026-10-29-008) (task-2026-10-29-008)
 - d996363 2026-10-29 docs: close out task-2026-10-29-007 — record result and regenerate progress (task-2026-10-29-007)
 - 678e676 2026-10-29 feat: per-section time in finish summary (specs/011, task-2026-10-29-007) (task-2026-10-29-007)
 - 00d3374 2026-10-29 docs: close out task-2026-10-29-006 — record result and regenerate progress (task-2026-10-29-006)
 - 5ba27d3 2026-10-29 feat: unpin bottom workout button into content flow (specs/010, task-2026-10-29-006) (task-2026-10-29-006)
 - ebdfde1 2026-10-29 docs: close out task-2026-10-29-005 — record result and regenerate progress (task-2026-10-29-005)
-- 2e0f6e4 2026-10-29 feat: collapse header on scroll in active workout, timer keeps position (specs/009, task-2026-10-29-005) (task-2026-10-29-005)
-- 93741f4 2026-10-29 docs: add plan.md to specs/008 (validator structure requirement) (task-2026-10-29-004)
