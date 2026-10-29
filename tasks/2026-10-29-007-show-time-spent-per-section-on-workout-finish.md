@@ -12,7 +12,7 @@ checkpoint:
   git_status_clean: false
   backup_ref: ""
 result:
-  commits: []
+  commits: [678e676]
   files_changed: ["tk-focus.js", "tk-focus.css", "__tests__/section-time.test.js", "specs/011-section-time-summary/spec.md", "specs/011-section-time-summary/plan.md", "specs/011-section-time-summary/tasks.md", "tasks/2026-10-29-007-show-time-spent-per-section-on-workout-finish.md", "logs/task-session-map.yml", "docs/progress.md"]
   test_command: "npm run test"
   test_result: "Tests: 92 passed, 92 total (18 suites)"
