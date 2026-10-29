@@ -24,6 +24,9 @@ _(Transcribed from the pre-governance project documents during the v0.4.0 migrat
 | Closed (Закрыто) | An exercise that is done or skipped; a section is finishable when all its exercises are closed | завершено, пройдено |
 | History entry (Запись истории) | A saved finished workout with a stable id; only the well-being rating and comment are editable after the fact | лог, журнал |
 | Settings page (Страница настроек) | Per-list settings screen (currently a stub without parameters); opened from the list card menu | preferences, опции |
+| Disabled (Выключено) | Состояние упражнения: временно исключено из сессии владельцем в режиме построения; параметры сохраняются, из прогресса секции не считается, в историю не попадает. Отсутствие поля = включено | скрыто, удалено, отключено |
+| Session feedback (Отметка о подходе) | Опциональные поля упражнения активной сессии: комментарий (sessionNote) и эмоциональная оценка 1–5 эмодзи (sessionRating); заполняются только во время тренировки, сбрасываются при старте следующей | заметка, комментарий (для rating) |
+| Technique notes (Заметки по технике) | Постоянный текст упражнения, редактируемый в режиме построения; в отличие от session feedback не сбрасывается между тренировками | описание, session note |
 
 ## Architecture principles
 
