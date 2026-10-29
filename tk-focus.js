@@ -561,6 +561,7 @@
    */
   function render() {
     const mode = state.mode;
+    updateHeaderCollapse();
     const snav = $('#snav'), dots = $('#dots'), wtitle = $('#wtitle'), wpill = $('#wpill'), crumb = $('#crumb');
     const wdesc = $('#wdesc');
 
@@ -685,6 +686,15 @@
   /* ---------------- timer ---------------- */
   function startTimer() { stopTimer(); timerInt = setInterval(() => { if (state.mode === 'active') { const p = $('#wpill'); if (p) p.textContent = '⏱ ' + mmss(Math.floor((Date.now() - state.startedAt) / 1000)); } }, 1000); }
   function stopTimer() { if (timerInt) clearInterval(timerInt); timerInt = null; }
+
+  /* ---------------- header collapse on scroll (specs/009) ---------------- */
+  function updateHeaderCollapse() {
+    const screen = $('#screen');
+    if (!screen) return;
+    if (state.mode !== 'active') { screen.classList.remove('scrolled'); return; }
+    screen.classList.toggle('scrolled', exBody.scrollTop > 40);
+  }
+  exBody.addEventListener('scroll', updateHeaderCollapse, { passive: true });
 
   /* ---------------- mode transitions ---------------- */
   /**
