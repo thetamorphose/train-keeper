@@ -12,7 +12,7 @@ checkpoint:
   git_status_clean: false
   backup_ref: ""
 result:
-  commits: []
+  commits: [2e0f6e4]
   files_changed: ["tk-focus.js", "tk-focus.css", "__tests__/header-collapse.test.js", "specs/009-header-collapse-on-scroll/spec.md", "specs/009-header-collapse-on-scroll/plan.md", "specs/009-header-collapse-on-scroll/tasks.md", "tasks/2026-10-29-005-hide-top-panel-on-scroll-down-in-active-workout-timer-stays-.md", "logs/task-session-map.yml", "docs/progress.md"]
   test_command: "npm run test"
   test_result: "Tests: 87 passed, 87 total (17 suites)"
