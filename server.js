@@ -91,6 +91,18 @@ app.put('/api/history/:id', async (req, res) => {
 });
 
 /**
+ * DELETE /api/history/:id - Remove a single history entry
+ */
+app.delete('/api/history/:id', async (req, res) => {
+  const { id } = req.params;
+  const idx = db.data.history.findIndex((h) => h.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  db.data.history.splice(idx, 1);
+  await db.write();
+  res.json({ success: true });
+});
+
+/**
  * GET /api/templates - Retrieve all workout templates
  */
 app.get('/api/templates', (req, res) => {

@@ -547,6 +547,7 @@
         return '<div class="h-item" data-act="viewhistory" data-i="' + idx + '">' +
           '<div class="h-top"><span class="h-title">' + esc(h.title || 'Тренировка') + '</span><span class="h-date">' + new Date(h.date).toLocaleDateString() + '</span></div>' +
           '<div class="h-stats">' + stats + '</div>' +
+          '<button class="h-del" data-act="delhistory" data-i="' + idx + '" title="Удалить запись">✕</button>' +
           '</div>';
       }).join('') + '</div>';
     }
@@ -942,6 +943,15 @@
           state.i = 0;
           render();
         }
+        return;
+      }
+      case 'delhistory': {
+        const entry = state.history[i];
+        if (!entry) return;
+        if (!confirm('Удалить запись «' + (entry.title || 'Тренировка') + '» от ' + new Date(entry.date).toLocaleDateString() + '?')) return;
+        fetch('/api/history/' + entry.id, { method: 'DELETE' })
+          .then((res) => { if (res.ok || res.status === 404) { state.history.splice(i, 1); save(); toast('Запись удалена'); render(); } })
+          .catch(() => {});
         return;
       }
       case 'viewhistory': {
