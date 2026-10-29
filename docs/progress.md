@@ -1,5 +1,5 @@
 # Project State (generated — do not edit; run gen_progress.py)
-Обновлено: 2026-10-21T14:53:48Z. Источники: tasks/, specs/, bugs/, tech-debt.md, git log.
+Обновлено: 2026-10-29T10:47:28Z. Источники: tasks/, specs/, bugs/, tech-debt.md, git log.
 
 ## Реализовано
 - task-2026-10-21-001 «Migrate project to product-agent-governance v0.4.0» — done, коммиты [5bfaa9e]
@@ -12,6 +12,7 @@
 - task-2026-10-21-008 «Edit well-being rating and comment of finished workouts in history» — done, коммиты [4834a97] → specs/004-history-edit-rating-comment
 - task-2026-10-21-009 «Workout settings page (stub, entry from list card menu)» — done, коммиты [c77eaf1] → specs/005-workout-settings-page
 - task-2026-10-21-010 «Add 5 new ubiquitous-language terms from tasks 005-009» — done, коммиты [84a6da7]
+- task-2026-10-29-001 «Add backlog items: exercise disable, history entry delete, sets preselected bug, scroll header, unfix bottom button, section-time summary, per-exercise comments, rest timer» — done, коммиты [bf52b93]
 
 ## В работе / запланировано
 - нет
@@ -28,11 +29,11 @@
 - Вопросы спек: нет
 
 ## Активность (git, коммиты с Task:)
+- bf52b93 2026-10-29 docs: add backlog items from owner review 2026-10-29 (task-2026-10-29-001) (task-2026-10-29-001)
+- 7eb85be 2026-10-21 docs: close out task-2026-10-21-010 — record result and regenerate progress (task-2026-10-21-010)
 - 84a6da7 2026-10-21 docs: add 5 ubiquitous-language terms from features 005-009 to the constitution (task-2026-10-21-010)
 - b281fac 2026-10-21 docs: remove implemented backlog items (tasks 005-009) (task-2026-10-21-009)
 - d41e5b9 2026-10-21 docs: close out task-2026-10-21-009 — record result and regenerate progress (task-2026-10-21-009)
 - c77eaf1 2026-10-21 feat: workout settings page stub, entry from list card menu (task-2026-10-21-009)
 - bfaeb88 2026-10-21 docs: close out task-2026-10-21-008 — record result and regenerate progress (task-2026-10-21-008)
 - 4834a97 2026-10-21 feat: edit well-being rating and comment of finished workouts in history view (task-2026-10-21-008)
-- eabc5e0 2026-10-21 docs: close out task-2026-10-21-007 — record result and regenerate progress (task-2026-10-21-007)
-- 7f2ce69 2026-10-21 feat: duplicate exercise into another section or workout via card menu (task-2026-10-21-007)

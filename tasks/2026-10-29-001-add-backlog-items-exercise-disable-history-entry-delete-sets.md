@@ -12,7 +12,7 @@ checkpoint:
   git_status_clean: false
   backup_ref: ""
 result:
-  commits: [38ad06a]
+  commits: [bf52b93]
   files_changed: ["BACKLOG.md", "bugs/inbox/2026-10-29-sets-appear-preselected-at-workout-start.md", "tasks/2026-10-29-001-add-backlog-items-exercise-disable-history-entry-delete-sets.md", "logs/task-session-map.yml", "docs/progress.md"]
   test_command: "python tools/ai-agent-governance/scripts/validate_governance.py --project-root . --strict"
   test_result: "VALIDATION_OK (docs-only task; no application code changed, npm suite untouched)"
