@@ -12,7 +12,7 @@ checkpoint:
   git_status_clean: false
   backup_ref: ""
 result:
-  commits: []
+  commits: [f9ea740]
   files_changed: ["tk-focus.js", "__tests__/exercise-sets.test.js", "specs/008-sets-preselected-bugfix/spec.md", "tasks/2026-10-29-004-bugfix-sets-appear-pre-selected-at-workout-start.md", "bugs/inbox/2026-10-29-sets-appear-preselected-at-workout-start.md", "logs/task-session-map.yml", "docs/progress.md"]
   test_command: "npm run test"
   test_result: "Tests: 85 passed, 85 total (16 suites)"
