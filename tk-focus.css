@@ -208,6 +208,16 @@ body:not(.clean) .cadd{border-radius:15px 10px 14px 9px/9px 14px 10px 15px;}
 .rtable .sech td{font-size:16px;font-weight:700;border-bottom:2.5px solid var(--ink);padding-top:4px;}
 .rtable .sech td.hd{font-size:10.5px;font-weight:400;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:right;width:62px;}
 .sec-time{font-size:12px;font-weight:400;color:var(--muted);white-space:nowrap;}
+
+/* per-exercise session feedback (specs/012) */
+.sfb{margin-top:6px;}
+.sfb-toggle{border:1.5px dashed var(--line);background:transparent;color:var(--muted);font-family:inherit;font-size:12.5px;border-radius:9px;padding:5px 9px;cursor:pointer;max-width:100%;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sfb-toggle.open{border-style:solid;color:var(--ink);}
+.sfb-body{margin-top:6px;display:flex;flex-direction:column;gap:6px;}
+.sfb-note{width:100%;min-height:44px;border:2px solid var(--line);border-radius:10px;padding:7px 9px;font-family:inherit;font-size:13.5px;resize:vertical;background:var(--card);box-sizing:border-box;}
+.sfb-note:focus{outline:none;border-color:var(--accent);}
+.sfb-emoji{font-size:15px;}
+.sfb-summary-note{font-size:12.5px;font-weight:400;color:var(--muted);margin-top:2px;}
 .rtable .exh td{font-weight:700;font-size:14.5px;padding-top:8px;border-bottom:none;color:var(--accent-ink);}
 .rtable .fl{color:#5b564d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rtable .pl{font-family:'Space Mono',monospace;text-align:right;color:var(--muted);}

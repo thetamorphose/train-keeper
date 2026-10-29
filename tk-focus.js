@@ -57,6 +57,8 @@
     done: false,
     skipped: false,
     notes,
+    sessionNote: '',
+    sessionRating: 0,
     fields: fields || [],
     sets: []
   });
@@ -140,6 +142,8 @@
       if (e.skipped === undefined) e.skipped = false;
       if (e.enabled === undefined) e.enabled = true;
       if (e.notes === undefined) e.notes = '';
+      if (e.sessionNote === undefined) e.sessionNote = '';
+      if (e.sessionRating === undefined) e.sessionRating = 0;
       if (!e.sets) e.sets = [];
       e.fields.forEach((f) => {
         if (f.id >= _id) _id = f.id + 1;
@@ -381,6 +385,20 @@
     } else if (ex.notes) {
       h += '<div class="ex-notes-display">📝 ' + esc(ex.notes) + '</div>';
     }
+    if (active) {
+      const fbOpen = sheetExId == ex.id;
+      const emojis = { 1: '😞', 2: '😐', 3: '🙂', 4: '😃', 5: '🤩' };
+      const hasFb = ex.sessionRating || ex.sessionNote;
+      h += '<div class="sfb">';
+      h += '<button class="sfb-toggle' + (fbOpen || hasFb ? ' open' : '') + '" data-act="sfb-toggle" data-id="' + ex.id + '">' + (ex.sessionRating ? emojis[ex.sessionRating] + ' ' : '') + (ex.sessionNote ? '💬 ' + esc(ex.sessionNote.slice(0, 30)) : '💬 Как прошло?') + '</button>';
+      if (fbOpen) {
+        h += '<div class="sfb-body">';
+        h += '<div class="wb-rating">' + [1, 2, 3, 4, 5].map(r => '<button class="wb-btn' + (ex.sessionRating === r ? ' active' : '') + '" data-act="sfb-rate" data-id="' + ex.id + '" data-val="' + r + '">' + emojis[r] + '</button>').join('') + '</div>';
+        h += '<textarea class="sfb-note" data-act="sfbnote" data-id="' + ex.id + '" placeholder="Комментарий к упражнению...">' + esc(ex.sessionNote || '') + '</textarea>';
+        h += '</div>';
+      }
+      h += '</div>';
+    }
     if (canCheck && ex.sets && ex.sets.length > 0) {
       const planStr = ex.fields.map(f => {
         if (f.key === 'подходы') return f.value + ' подх.';
@@ -457,8 +475,11 @@
         let statusText = '';
         if (e.skipped) statusText = ' <span class="skip skipped-status">пропущено</span>';
         else if (!e.done) statusText = ' <span class="skip">не отмечено</span>';
-        
-        h += '<tr class="exh"><td colspan="3">' + esc(e.name) + statusText + '</td></tr>';
+        const emojis = { 1: '😞', 2: '😐', 3: '🙂', 4: '😃', 5: '🤩' };
+        const fb = (e.sessionRating ? ' <span class="sfb-emoji">' + emojis[e.sessionRating] + '</span>' : '') +
+          (e.sessionNote ? ' <div class="sfb-summary-note">💬 ' + esc(e.sessionNote) + '</div>' : '');
+
+        h += '<tr class="exh"><td colspan="3">' + esc(e.name) + statusText + fb + '</td></tr>';
         
         if (e.sets && e.sets.length > 0) {
           e.sets.forEach((set, setIdx) => {
@@ -713,6 +734,8 @@
     state.sections.forEach((s) => s.ex.forEach((e) => {
       e.done = false;
       e.skipped = false;
+      e.sessionNote = '';
+      e.sessionRating = 0;
       if (e.enabled === undefined) e.enabled = true;
       e.fields.forEach((f) => { f.plan = f.value; });
       initSetsForExercise(e);
@@ -798,6 +821,8 @@
     state.sections.forEach((s) => s.ex.forEach((e) => { 
       e.done = false; 
       e.skipped = false;
+      e.sessionNote = '';
+      e.sessionRating = 0;
       if (e.sets) {
         e.sets.forEach((set) => {
           set.done = false;
@@ -982,6 +1007,17 @@
           state.i = 0;
           render();
         }
+        return;
+      }
+      case 'sfb-toggle': {
+        sheetExId = (sheetExId == id) ? null : id;
+        render();
+        return;
+      }
+      case 'sfb-rate': {
+        const fex = findEx(id);
+        if (fex) { fex.sessionRating = (+el.dataset.val === fex.sessionRating) ? 0 : +el.dataset.val; save(); }
+        render();
         return;
       }
       case 'delhistory': {
@@ -1193,6 +1229,11 @@
     if (el.dataset.act === 'exnotes') {
       const ex = findEx(el.dataset.id);
       if (ex) { ex.notes = el.value; tkLogic.saveTemplate(state); }
+      return;
+    }
+    if (el.dataset.act === 'sfbnote') {
+      const ex = findEx(el.dataset.id);
+      if (ex) { ex.sessionNote = el.value; save(); }
       return;
     }
     const exId = el.dataset.id || el.dataset.exId;
