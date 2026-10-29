@@ -26,7 +26,7 @@ describe('Frontend Habit Tracking State & UI Logic', () => {
       <div id="sname"></div>
       <div id="ssub"></div>
       <div id="wdesc"></div>
-      <button id="secbtn"></button>
+
       <button data-prev></button>
       <button data-next></button>
       <div id="sheet"></div>

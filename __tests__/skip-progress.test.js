@@ -30,7 +30,7 @@ describe('Skipped exercise counting (bug-2026-10-21-001)', () => {
       <div id="crumb"></div>
       <div id="sname"></div>
       <div id="ssub"></div>
-      <button id="secbtn"></button>
+
       <div id="sheet"></div>
       <div id="scrim"></div>
       <div id="tchips"></div>

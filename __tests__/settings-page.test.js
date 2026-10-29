@@ -31,7 +31,7 @@ describe('Workout settings page (stub, specs/005)', () => {
       <div id="crumb"></div>
       <div id="sname"></div>
       <div id="ssub"></div>
-      <button id="secbtn"></button>
+
       <div id="sheet"></div>
       <div id="scrim"></div>
       <div id="tchips"></div>

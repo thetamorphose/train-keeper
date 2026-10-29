@@ -29,4 +29,15 @@ describe('Header collapse on scroll (specs/009)', () => {
     // render re-evaluates collapse (mode switches reset it)
     expect(js).toMatch(/function render\(\) \{\s*const mode = state\.mode;\s*updateHeaderCollapse\(\);/);
   });
+
+  test('AC (specs/010): secfoot button is rendered in-flow inside exBody, not fixed', () => {
+    const js = fs.readFileSync(path.resolve(__dirname, '../tk-focus.js'), 'utf8');
+    const html = fs.readFileSync(path.resolve(__dirname, '../Train Keeper - Фокус.html'), 'utf8');
+    // static .secfoot removed from HTML; button comes from render()
+    expect(html).not.toMatch(/class="secfoot"/);
+    expect(js).toMatch(/secfootHTML/);
+    // CSS: no absolute/fixed positioning and no gradient backdrop
+    expect(css).toMatch(/\.secfoot\{padding/);
+    expect(css).not.toMatch(/\.secfoot\{[^}]*(position:\s*(absolute|fixed)|linear-gradient)/);
+  });
 });

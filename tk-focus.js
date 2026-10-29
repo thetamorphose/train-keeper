@@ -559,6 +559,8 @@
   /**
    * Main rendering function. Updates the DOM based on the current application state.
    */
+  const secfootHTML = () => '<div class="secfoot"><button class="secbtn ghost" id="secbtn" data-act="nextsec">—</button></div>';
+
   function render() {
     const mode = state.mode;
     updateHeaderCollapse();
@@ -594,7 +596,7 @@
       wtitle.contentEditable = 'false';
       if (wdesc) wdesc.style.display = 'none';
       wpill.className = 'timer mono'; wpill.textContent = '⚙';
-      exBody.innerHTML = '<div class="home"><div class="h-empty">Страница настроек — параметры появятся позже.</div></div>';
+      exBody.innerHTML = '<div class="home"><div class="h-empty">Страница настроек — параметры появятся позже.</div></div>' + secfootHTML();
       const btn = $('#secbtn'); btn.className = 'secbtn go'; btn.dataset.act = 'closesettings';
       btn.textContent = '← К спискам';
       save(); return;
@@ -605,11 +607,11 @@
       wtitle.textContent = 'Train Keeper'; wtitle.contentEditable = 'false';
       wpill.className = 'timer draft mono'; wpill.textContent = 'архив';
       if (wdesc) wdesc.style.display = 'none';
-      exBody.innerHTML = homeHTML();
+      exBody.innerHTML = homeHTML() + secfootHTML();
       $('#secbtn').style.display = 'none';
       save(); return;
     }
-    $('#secbtn').style.display = '';
+    const sb = $('#secbtn'); if (sb) sb.style.display = '';
 
     if (mode === 'summary') {
       snav.style.display = 'none'; dots.style.display = 'none';
@@ -617,7 +619,7 @@
       wtitle.textContent = state.title;
       wtitle.contentEditable = 'false'; wpill.className = 'timer mono'; wpill.textContent = '✓ готово';
       if (wdesc) wdesc.style.display = 'none';
-      exBody.innerHTML = summaryHTML();
+      exBody.innerHTML = summaryHTML() + secfootHTML();
       const btn = $('#secbtn'); btn.className = 'secbtn go'; btn.dataset.act = 'closesummary';
       btn.textContent = state.isViewingHistory ? '← Назад к истории' : 'Готово · к редактированию';
       save(); return;
@@ -643,6 +645,7 @@
     const renderEx = mode === 'active' ? sec.ex.filter(tkLogic.isEnabled) : sec.ex;
     let h = renderEx.map(cardHTML).join('');
     if (mode === 'build') h += '<div class="addexc" data-act="addexc">＋ упражнение</div>';
+    h += secfootHTML();
     exBody.innerHTML = h;
 
     dots.innerHTML = state.sections.map((s, k) => {
