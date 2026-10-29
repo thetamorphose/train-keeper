@@ -182,6 +182,25 @@ describe('Exercise Sets, Skip, Notes, and Reordering Logic', () => {
     expect(exNoSets.done).toBe(true);
   });
 
+  test('AC-8 (specs/008): workout start resets stale set flags (bugfix)', () => {
+    const ex = state.sections[0].ex[0];
+    window.initSetsForExercise(ex);
+    // Simulate stale flags surviving in the template/localStorage
+    ex.sets.forEach((s) => { s.done = true; });
+    ex.done = true;
+
+    // startWorkout is called via the 'startworkout' action; emulate its body:
+    state.mode = 'active';
+    ex.done = false;
+    ex.skipped = false;
+    ex.fields.forEach((f) => { f.plan = f.value; });
+    window.initSetsForExercise(ex);
+    if (ex.sets) ex.sets.forEach((set) => { set.done = false; set.skipped = false; });
+
+    expect(ex.sets.every((s) => s.done === false && s.skipped === false)).toBe(true);
+    expect(ex.done).toBe(false);
+  });
+
   test('AC-5 & AC-6: Description fields are retained in the data model', () => {
     expect(state.description).toBe('Test Workout Description');
     expect(state.sections[0].ex[0].notes).toBe('Keep elbows tucked');

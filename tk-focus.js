@@ -695,8 +695,10 @@
     state.sections.forEach((s) => s.ex.forEach((e) => {
       e.done = false;
       e.skipped = false;
+      if (e.enabled === undefined) e.enabled = true;
       e.fields.forEach((f) => { f.plan = f.value; });
       initSetsForExercise(e);
+      if (e.sets) e.sets.forEach((set) => { set.done = false; set.skipped = false; });
     }));
     editId = null; menuId = null; render(); startTimer(); exBody.scrollTop = 0;
   }
